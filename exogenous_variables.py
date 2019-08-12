@@ -91,8 +91,13 @@ def sarima_model_creation(data, p, d, q, P, D, Q, m, exog=None):
 def model_creation_pred_one_step(train_data, test_data, exotrain, exotest):
     list_one_step = []
 
-    mod = sarima_model_creation(train_data, 4, 0, 3, 3, 0, 4, 12, exog = exotrain)
-    nextMonth = mod.forecast(exog = exotrain.iloc[[-1]]) # passing prevMonth (december, for forecasting jan)
+    if exotrain is not None:
+        mod = sarima_model_creation(train_data, 4, 0, 3, 3, 0, 4, 12, exog = exotrain)
+        nextMonth = mod.forecast(exog = exotrain.iloc[[-1]]) # passing prevMonth (december, for forecasting jan)
+    else:
+        mod = sarima_model_creation(train_data, 4, 0, 3, 3, 0, 4, 12)
+        nextMonth = mod.forecast() # passing prevMonth (december, for forecasting jan)
+    
     list_one_step.append(nextMonth[0]) # captures prediction
 
     # if test data exists
@@ -100,8 +105,9 @@ def model_creation_pred_one_step(train_data, test_data, exotrain, exotest):
         # increment data for next month's iteration
         train_data = pd.concat([train_data, test_data[[0]]])
         test_data = test_data.drop(0, axis = 0)
-        exotrain = pd.concat([exotrain, exotest[[0]]])
-        exotest = exotest.drop(0, axis = 0)
+        if exotrain is not None:
+            exotrain = pd.concat([exotrain, exotest[[0]]])
+            exotest = exotest.drop(0, axis = 0)
 
         # execute & capture future predictions
         futurePredictions = model_creation_pred_one_step(train_data, test_data, exotrain, exotest)
@@ -112,7 +118,13 @@ def model_creation_pred_one_step(train_data, test_data, exotrain, exotest):
 
 
 def billsFn():
-    mae = mean_absolute_error(testing_data, model_creation_pred_one_step(train_data.copy(), test_data.copy(), exotrain.copy(), exotest.copy()) )
+    clone_train_data = train_data if is None else train_data.copy()
+    clone_test_data = test_data if is None else test_data.copy()
+    clone_exotrain = exotrain if is None else exotrain.copy()
+    clone_exotest = exotest if is None else exotest.copy()
+
+    predictions = model_creation_pred_one_step(clone_train_data, clone_test_data, clone_exotrain, clone_exotest)
+    mae = mean_absolute_error(testing_data, predictions)
 
 
 
