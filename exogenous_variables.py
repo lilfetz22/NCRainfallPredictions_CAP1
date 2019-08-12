@@ -76,7 +76,51 @@ def sarima_model_creation(data, p, d, q, P, D, Q, m, exog=None):
                                           initialization='approximate_diffuse')
     model_fit = sarimamod.fit()# start_params=[0, 0, 0, 0, 1])
     return(model_fit)
+
+
+
+
+
+# Function : make forecast based on provided data
+#
+# @param train_data --- what I already believe is true.  Dec 2007 and before 80%
+# @param test_data -- what I want to prove Jan 2008 and up 20%
+# @param exotrain -- external data not included but could help predictions Dec 2007 and before
+# @param exotest -- external data I want to prove
+# @return -- list of all predictions for the location
+def model_creation_pred_one_step(train_data, test_data, exotrain, exotest):
+    list_one_step = []
+
+    mod = sarima_model_creation(train_data, 4, 0, 3, 3, 0, 4, 12, exog = exotrain)
+    nextMonth = mod.forecast(exog = exotrain.iloc[[-1]]) # passing prevMonth (december, for forecasting jan)
+    list_one_step.append(nextMonth[0]) # captures prediction
+
+    # if test data exists
+    if len(test_data) >= 1:
+        # increment data for next month's iteration
+        train_data = pd.concat([train_data, test_data[[0]]])
+        test_data = test_data.drop(0, axis = 0)
+        exotrain = pd.concat([exotrain, exotest[[0]]])
+        exotest = exotest.drop(0, axis = 0)
+
+        # execute & capture future predictions
+        futurePredictions = model_creation_pred_one_step(train_data, test_data, exotrain, exotest)
+        # add to list
+        list_one_step = pd.concat([list_one_step, futurePredictions])
     
+    return list_one_step
+
+
+def billsFn():
+    mae = mean_absolute_error(testing_data, model_creation_pred_one_step(train_data.copy(), test_data.copy(), exotrain.copy(), exotest.copy()) )
+
+
+
+
+
+
+
+
 def hyperparameter_find(training_data, comb, testing_data, search = False, exogtr = None, exogtest = None):
     leastmae = 1000
     for com in tqdm(comb):
