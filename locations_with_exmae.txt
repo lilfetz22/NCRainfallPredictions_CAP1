@@ -1,0 +1,33 @@
+Locations with exogenous variables that mean something
+
+Whiteville 7 NW, NC with Loris, SC
+Casar, NC with [Chesnee, gaffney], chesnee and gaffney individual
+Forest City, NC with gaffney, and [gaffney, spartanburg 3]
+Gastonia, NC with [fort mill, gaffney] and gaffney
+Lake Lure with chesnee
+Elizabethtown, nc with Loris 2 S, SC
+
+Mount Holly with:
+	Chesnee 7 WSW, SC
+	Chester 1 SE, SC
+	Gaffney 6 E, SC
+	Lockhart, SC
+	Catawba, SC, Gaffney, SC
+	Chesnee, SC, Gaffney, SC
+	Chesnee, SC, Lockhart, SC
+	Chester, Gaffney
+	Chester, Lockhart
+	fort mill, gaffney
+	gaffney, lockhart
+	catawba, chesnee, chester
+	catawba, chessnee, gaffney
+	catawba, chesnee, lockhart
+	catawba, chester, gaffney
+	catawba, chester, lockhart
+
+12 month before
+Whiteville with Loris 2 S, SC
+Casar, nc with Gaffney 6E, SC
+Forest City with Gaffney
+Gastonia with Gaffney
+Grandfather mtn, nc with Elizabethton, TN
