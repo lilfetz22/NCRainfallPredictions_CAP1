@@ -9,7 +9,7 @@ from itertools import combinations
 from scipy import stats
 from datetime import datetime
 from sklearn.metrics import mean_absolute_error
-
+from multiprocessing
 
 file = 'rainfalldata.csv'
 rd = pd.read_csv(file)
@@ -151,7 +151,7 @@ for key,value in tqdm(sub_exogen.items()):
     l_o_dfs[key] = lo_dfs2
 l_o_dfs['LONGWOOD, NC']
 
-def exogenous_var(data, ncloc, l_exoloc, best_comb):
+def exogenous_var(data, ncloc, l_exoloc):
 #     for key, value in tqdm(exo_dict.items()):
     dat = data[ncloc]
 #         l_exog = exog_combinations(data, value)
@@ -159,15 +159,49 @@ def exogenous_var(data, ncloc, l_exoloc, best_comb):
     keymae = maeFinder(tr, test)
     print('keymae of: '+ key +' = '+str(keymae))
     bettermae = {}
-    for exog in tqdm(l_exoloc):
-        extr, extest = train_test_split(exog, 0.2, False)
-        exmae = maeFinder(tr, test, extr, extest)
-        co = tuple(exog.columns)
-        print('exmae = {}'.format(co) + ' '+ str(exmae))
-        if exmae < keymae:
-            bettermae[co] = exmae
-            bettermae2 = {key: bettermae}
-    return(co)
+	bettermaeLock = Lock()
+
+	def find_exmae(exog, l):
+		extr, extest = train_test_split(exog, 0.2, False)
+		exmae = maeFinder(tr, test, extr, extest)
+	    co = tuple(exog.columns)
+        if result["exmae"] < keymae:
+			l.acquire()
+			try:
+				bettermae[co] = exmae
+				bettermae2 = {key: bettermae}
+			finally:
+				l.release()
+		
+		return { "co": co, "exmae": exmae }
+
+	def on_success(result):
+        print('exmae = {}'.format(result["co"]) + ' '+ str(result["exmae"]))
+
+	def on_error():
+		# do something
+	
+
+	process_limit = multiprocessing.cpu_count()-1
+	pool = multiprocessing.Semaphore(process_limit)
+	# num_exmaes = len(list(l_exoloc.keys()))
+	for exog in l_exoloc:
+		pool.apply_async(find_exmae, (exog, bettermaeLock), None, on_success, on_error)
+
+	pool.close()
+	pool.join()
+
+	return()
+
+    # for exog in tqdm(l_exoloc):
+    #     extr, extest = train_test_split(exog, 0.2, False)
+    #     exmae = maeFinder(tr, test, extr, extest)
+    #     co = tuple(exog.columns)
+    #     print('exmae = {}'.format(co) + ' '+ str(exmae))
+    #     if exmae < keymae:
+    #         bettermae[co] = exmae
+    #         bettermae2 = {key: bettermae}
+    # return(co)
 
 warnings.filterwarnings("ignore")
 for key,value in tqdm(l_o_dfs.items()):
