@@ -88,81 +88,41 @@ def sarima_model_creation(data, p, d, q, P, D, Q, m, exog=None):
 # @param exotrain -- external data not included but could help predictions Dec 2007 and before
 # @param exotest -- external data I want to prove
 # @return -- list of all predictions for the location
-def model_creation_pred_one_step(train_data, test_data, exotrain, exotest):
+def model_creation_pred_one_step(train_data, test_data, exotrain=None, exotest=None):
     list_one_step = []
 
-    mod = sarima_model_creation(train_data, 4, 0, 3, 3, 0, 4, 12, exog = exotrain)
-    nextMonth = mod.forecast(exog = exotrain.iloc[[-1]]) # passing prevMonth (december, for forecasting jan)
-    list_one_step.append(nextMonth[0]) # captures prediction
+    mod = sarima_model_creation(train_data, 4, 0, 3, 3, 0, 4, 12, exotrain)
+	# if exists, passing exotrain's prevMonth (december, for forecasting jan), otherwise only forcast based on model
+    nextMonth = mod.forecast() if exotrain is None else mod.forecast( exotrain.iloc[[-1]] ) 		# turnary assignment expression
+    list_one_step.append(nextMonth[0]) 					# captures prediction
 
     # if test data exists
     if len(test_data) >= 1:
         # increment data for next month's iteration
         train_data = pd.concat([train_data, test_data[[0]]])
-        test_data = test_data.drop(0, axis = 0)
-        exotrain = pd.concat([exotrain, exotest[[0]]])
-        exotest = exotest.drop(0, axis = 0)
+        test_data = test_data.drop(test_data.index[0], axis = 0)
+        if exotrain is not None:
+            exotrain = pd.concat([exotrain, exotest[[0]]])
+            exotest = exotest.drop(exotest.index[0], axis = 0)
 
         # execute & capture future predictions
         futurePredictions = model_creation_pred_one_step(train_data, test_data, exotrain, exotest)
         # add to list
-        list_one_step = pd.concat([list_one_step, futurePredictions])
+        list_one_step.append(futurePredictions)
     
-    return list_one_step
+    return(list_one_step)
 
+# previously billsFn
+def maeFinder(train_data, test_data, exotrain=None, exotest=None):
+    clone_train_data = train_data.copy()
+    clone_test_data = test_data.copy()
+    clone_exotrain = exotrain if exotrain is None else exotrain.copy()
+    clone_exotest = exotest if exotest is None else exotest.copy()
 
-def billsFn():
-    mae = mean_absolute_error(testing_data, model_creation_pred_one_step(train_data.copy(), test_data.copy(), exotrain.copy(), exotest.copy()) )
+    predictions = model_creation_pred_one_step(clone_train_data, clone_test_data, clone_exotrain, clone_exotest)
+    mae = mean_absolute_error(testing_data, predictions)
+	return(mae)
 
-
-
-
-
-
-
-
-def hyperparameter_find(training_data, comb, testing_data, search = False, exogtr = None, exogtest = None):
-    leastmae = 1000
-    for com in tqdm(comb):
-        li_one_step = []
-        for i in tqdm(range(len(testing_data))):
-            if i == 0:
-                copytraining = training_data.copy()
-                if exogtr is not None:
-                    excopy = exogtr.copy()
-                    mod_1 = sarima_model_creation(copytraining, com[0], 0, com[1], com[2], 0, 
-                                                  com[3], 12, exog=excopy)
-                    one_step_pred = mod_1.forecast(exog=excopy.iloc[[-12]]) #change this to -12
-                    excopy = pd.concat([excopy, exogtest.iloc[[i]]])
-                else:
-                    mod_1 = sarima_model_creation(copytraining, com[0], 0, com[1], com[2], 0, com[3], 12)
-                    one_step_pred = mod_1.forecast()
-                li_one_step.append(one_step_pred[0])
-                copytraining = pd.concat([copytraining, testing_data[[i]]])
-            else:
-                if exogtr is not None:
-                    mod_1 = sarima_model_creation(copytraining, com[0], 0, com[1], com[2], 0, 
-                                                  com[3], 12, exog=excopy)
-                    one_step_pred2 = mod_1.forecast(exog=excopy.iloc[[-12]]) # change this to -12
-                    excopy = pd.concat([excopy, exogtest.iloc[[i]]])
-                else:
-                    mod_1 = sarima_model_creation(copytraining, com[0], 0, com[1], com[2], 0, com[3], 12)
-                    one_step_pred2 = mod_1.forecast()
-                li_one_step.append(one_step_pred2[0])
-                copytraining = pd.concat([copytraining, testing_data[[i]]])
-        mae = mean_absolute_error(testing_data, li_one_step)
-        if search is True:
-            if mae < leastmae:
-                leastmae = mae
-                H_AR = com[0]
-                H_MA = com[1]
-                H_SAR = com[2]
-                H_SMA = com[3]
-            print(com,mae)            
-    if search is True:
-        return('AR: '+ str(H_AR), 'MA: ' +str(H_MA), 'SAR: '+str(H_SAR), 'SMA: '+str(H_SMA))
-    else:
-        return(mae)
 
 def exog_combinations(df, exoe):
     lo_dfs = []
@@ -195,13 +155,13 @@ def exogenous_var(data, ncloc, l_exoloc, best_comb):
 #     for key, value in tqdm(exo_dict.items()):
     dat = data[ncloc]
 #         l_exog = exog_combinations(data, value)
-    tr, test = train_test_split(dat, test_size = 0.2, shuffle=False)
-    keymae = hyperparameter_find(tr, best_comb, test)
+    tr, test = train_test_split(dat, 0.2, False)
+    keymae = maeFinder(tr, test)
     print('keymae of: '+ key +' = '+str(keymae))
     bettermae = {}
     for exog in tqdm(l_exoloc):
-        extr, extest = train_test_split(exog, test_size = 0.2, shuffle=False)
-        exmae = hyperparameter_find(tr, best_comb, test, exogtr=extr, exogtest = extest)
+        extr, extest = train_test_split(exog, 0.2, False)
+        exmae = maeFinder(tr, test, extr, extest)
         co = tuple(exog.columns)
         print('exmae = {}'.format(co) + ' '+ str(exmae))
         if exmae < keymae:
@@ -209,7 +169,7 @@ def exogenous_var(data, ncloc, l_exoloc, best_comb):
             bettermae2 = {key: bettermae}
     return(co)
 
-best_comb = [[4,3,3,4]]
 warnings.filterwarnings("ignore")
 for key,value in tqdm(l_o_dfs.items()):
-    exogenous_var(rd, key, value, best_comb)
+    exogenous_var(rd, key, value)
+
