@@ -14,7 +14,7 @@ sh -c 'echo deb https://apt.repos.intel.com/mkl all main > /etc/apt/sources.list
 ## other (TBB, DAAL, MPI, ...) listed on page
 
 apt-get update
-apt-get install intel-mkl-64bit-2018.2-046   ## wants 500+mb :-/  installs to 1.8 gb :-/
+apt-get --yes install intel-mkl-64bit-2018.2-046   ## wants 500+mb :-/  installs to 1.8 gb :-/
 
 
 
