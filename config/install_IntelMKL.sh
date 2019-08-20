@@ -24,6 +24,15 @@ update-alternatives --install /usr/lib/x86_64-linux-gnu/libblas.so.3   libblas.s
 update-alternatives --install /usr/lib/x86_64-linux-gnu/liblapack.so   liblapack.so-x86_64-linux-gnu    /opt/intel/mkl/lib/intel64/libmkl_rt.so 150
 update-alternatives --install /usr/lib/x86_64-linux-gnu/liblapack.so.3 liblapack.so.3-x86_64-linux-gnu  /opt/intel/mkl/lib/intel64/libmkl_rt.so 150
 
+## connect for IntelPython repository pip installs (mlk_fft, mlk_random, mlk_service)
+## They require it in /usr/lib/x86_64-linux-gnu/, /usr/lib/ or /usr/local/lib/
+ln -s /opt/intel/mkl/lib/intel64/libmkl_rt.so /usr/lib/x86_64-linux-gnu/libmkl_rt.so
+# IntelPython needs all header files 
+for filename in "$(cd /opt/intel/mkl && cd ./include && pwd)"/*; do 
+	[ -f "$filename" ] && ln -s "$filename" /usr/local/include/;  
+done;
+
+## mkl config knows install location
 echo "/opt/intel/lib/intel64"     >  /etc/ld.so.conf.d/mkl.conf
 echo "/opt/intel/mkl/lib/intel64" >> /etc/ld.so.conf.d/mkl.conf
 ldconfig
