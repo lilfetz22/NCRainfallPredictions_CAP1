@@ -132,6 +132,12 @@ main() {
 		echo "MISSING FILES: build directory is empty." >&2 && echo && exit 1;
 	fi
 
+	if [ ! -d "$DIRNAME/$IMAGE_DIR" ]; then
+		echo "[DOCKERIFY] Creating Directory: "
+		echo -n "[DOCKERIFY]   " && echo "$DIRNAME/$IMAGE_DIR"	# macosx mkdir -p -v [path] fails, is official bug
+		mkdir -p "$DIRNAME/$IMAGE_DIR"
+	fi
+
 	[ -z $VERSION ] && TAG="" || TAG="--tag '$REPO/$NAME:$VERSION'";
 
 	IMAGE_NAME="${NAME}_$([ -z $VERSION ] && echo "latest" || echo "$VERSION")"
