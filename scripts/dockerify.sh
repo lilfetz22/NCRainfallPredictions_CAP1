@@ -14,7 +14,7 @@
 DIRNAME="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd )" && DIRNAME="${DIRNAME%/scripts}";
 BUILD_DIR="build"
 IMAGE_DIR="bin"
-AUTHOR="lilFetz22"
+AUTHOR="lilfetz22"
 REPO="$AUTHOR"
 NAME="rainfall"
 
