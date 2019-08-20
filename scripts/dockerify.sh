@@ -158,6 +158,7 @@ main() {
 				$TAG \
 				--tag "$REPO/$NAME:latest" \
 				--output "$DIRNAME/$IMAGE_DIR/$IMAGE_NAME.tar" \
+				--squash \
 				"$DIRNAME"
 	
 	# actual command
@@ -166,6 +167,7 @@ main() {
 		$TAG \
 		--tag "$REPO/$NAME:latest" \
 		--output "$DIRNAME/$IMAGE_DIR/$IMAGE_NAME.tar" \
+		--squash \
 		"$DIRNAME"
 	DOCKER_BUILD_STOPS="$(timestamp)"
 

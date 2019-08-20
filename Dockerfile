@@ -18,8 +18,7 @@ RUN pip install https://github.com/IntelPython/mkl_fft/archive/v1.0.14.zip \
 ## Copy Application Code
 COPY build/* .
 COPY src/main.py .
-WORKDIR /usr/src/app/data
-COPY data/*.csv .
+COPY data/* ./data/
 
 ## Build User
 USER rainfalld
