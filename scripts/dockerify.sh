@@ -176,8 +176,9 @@ main() {
 		echo "[DOCKERIFY] Error occured.  Aborting..." >&2 && echo && exit 1;
 	else
 		SCRIPT_STOPS="$(timestamp)"
+		IMAGE_SIZE="$(docker images | awk '{print $7}' | awk 'NR==2')"
 		echo && echo "[DOCKERIFY] SUCCESS: Docker image created at $IMAGE_DIR/$IMAGE_NAME.tar";
-		echo "[DOCKERIFY] Docker Image built in $(($DOCKER_BUILD_STOPS-$DOCKER_BUILD_STARTS)) seconds." && echo;
+		echo "[DOCKERIFY] Docker Image ($IMAGE_SIZE) built in $(($DOCKER_BUILD_STOPS-$DOCKER_BUILD_STARTS)) seconds." && echo;
 		echo "[DOCKERIFY] Total Execution Time: $(($SCRIPT_STOPS-$SCRIPT_STARTS)) seconds" && echo;
 		# Instructions
 		echo "  NEXT STEPS  "
