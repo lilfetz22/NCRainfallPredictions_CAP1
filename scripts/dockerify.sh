@@ -64,6 +64,11 @@ check_prereqs() {
 	return "$missing_prereqs"
 }
 
+# timestamp function in ms
+timestamp() {
+  date +"%s"
+}
+
 # Process line arguments
 process_args() {
 	while :; do
@@ -119,13 +124,17 @@ main() {
 	[ $MODE_QUIET = true ] && exec 1>/dev/null;
 	print_banner 1>&1;
 
+	SCRIPT_STARTS="$(timestamp)";
+
 	if [ $REBUILD = true ]; then
 		# ensure build files are up to date
-		echo "[DOCKERIFY] Running build script...";
+		echo "[DOCKERIFY] Running code build script...";
+		BUILD_SCRIPT_STARTS=$(timestamp)
 		BUILD_DIR="$BUILD_DIR" "$DIRNAME/scripts/build.sh" &
 		pid=$!
 		wait $pid || { echo "[DOCKERIFY] build failed. Aborting..." 2>&2 && echo && exit 1; }
-		echo "[DOCKERIFY] Build completed!"
+		BUILD_SCRIPT_STOPS=$(timestamp)
+		echo "[DOCKERIFY] Code Build completed! ($(($BUILD_SCRIPT_STOPS-$BUILD_SCRIPT_STARTS)) seconds)" && echo;
 
 	elif [ -z "$(ls -al "$DIRNAME/$BUILD_DIR" | egrep --invert-match '^(.*[ ]((\.)|(\.\.))$)|(total.*$)')" ]; then
 		# build folder is empty
@@ -152,17 +161,22 @@ main() {
 				"$DIRNAME"
 	
 	# actual command
+	DOCKER_BUILD_STARTS="$(timestamp)"
 	docker build \
 		$TAG \
 		--tag "$REPO/$NAME:latest" \
 		--output "$DIRNAME/$IMAGE_DIR/$IMAGE_NAME.tar" \
 		"$DIRNAME"
-	
+	DOCKER_BUILD_STOPS="$(timestamp)"
+
 	# Handle Docker build status 
 	if [ "$?" != 0 ]; then
 		echo "[DOCKERIFY] Error occured.  Aborting..." >&2 && echo && exit 1;
 	else
-		echo && echo "[DOCKERIFY] SUCCESS: Docker image created at $IMAGE_DIR/$IMAGE_NAME.tar" && echo;
+		SCRIPT_STOPS="$(timestamp)"
+		echo && echo "[DOCKERIFY] SUCCESS: Docker image created at $IMAGE_DIR/$IMAGE_NAME.tar";
+		echo "[DOCKERIFY] Docker Image built in $(($DOCKER_BUILD_STOPS-$DOCKER_BUILD_STARTS)) seconds." && echo;
+		echo "[DOCKERIFY] Total Execution Time: $(($SCRIPT_STOPS-$SCRIPT_STARTS)) seconds" && echo;
 		# Instructions
 		echo "  NEXT STEPS  "
 		echo " ------------ "
