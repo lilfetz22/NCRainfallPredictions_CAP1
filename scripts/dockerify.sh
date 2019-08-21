@@ -157,18 +157,16 @@ main() {
 			"docker build" \
 				$TAG \
 				--tag "$REPO/$NAME:latest" \
-				--output "$DIRNAME/$IMAGE_DIR/$IMAGE_NAME.tar" \
-				--squash \
 				"$DIRNAME"
+				# --squash \
 	
 	# actual command
 	DOCKER_BUILD_STARTS="$(timestamp)"
 	docker build \
 		$TAG \
 		--tag "$REPO/$NAME:latest" \
-		--output "$DIRNAME/$IMAGE_DIR/$IMAGE_NAME.tar" \
-		--squash \
 		"$DIRNAME"
+		# --squash \
 	DOCKER_BUILD_STOPS="$(timestamp)"
 
 	# Handle Docker build status 
@@ -177,14 +175,17 @@ main() {
 	else
 		SCRIPT_STOPS="$(timestamp)"
 		IMAGE_SIZE="$(docker images | awk '{print $7}' | awk 'NR==2')"
-		echo && echo "[DOCKERIFY] SUCCESS: Docker image created at $IMAGE_DIR/$IMAGE_NAME.tar";
+		echo "[DOCKERIFY] compressing image..."
+		docker save "$REPO/$NAME:latest" | gzip > "$DIRNAME/$IMAGE_DIR/$IMAGE_NAME.tar.gz" 
+		echo && echo "[DOCKERIFY] SUCCESS: Docker image created at $IMAGE_DIR/$IMAGE_NAME.tar.gz";
 		echo "[DOCKERIFY] Docker Image ($IMAGE_SIZE) built in $(($DOCKER_BUILD_STOPS-$DOCKER_BUILD_STARTS)) seconds." && echo;
 		echo "[DOCKERIFY] Total Execution Time: $(($SCRIPT_STOPS-$SCRIPT_STARTS)) seconds" && echo;
 		# Instructions
 		echo "  NEXT STEPS  "
 		echo " ------------ "
 		echo "1. Connect to docker server instance.";
-		echo "2. Load this docker image with the command: "
+		echo "2. Unzip file with gzip.";
+		echo "3. Load this docker image with the command: "
 		echo "     $ docker load -i <path/to/$IMAGE_NAME.tar>"
 		echo "";
 		# echo "OR";
