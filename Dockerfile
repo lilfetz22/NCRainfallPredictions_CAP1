@@ -31,6 +31,18 @@ RUN useradd --system --no-user-group --gid daemon \
 RUN mkdir -p "/var/log/rainfall-predictor" \
 	&& chown rainfalld "/var/log/rainfall-predictor"
 
+## Create Admin sudoer user
+RUN useradd --gid sudo --create-home \
+			--comment "Administrator" \
+			admin
+
+## Become admin w/ password && Lock root account
+USER admin
+RUN sudo ./config/configure_admin.sh \
+	&& rm ./config/configure_admin.sh \
+	&& rm ./.admin.secret \
+	&& sudo passwd --delete --lock root
+
 ## Run as daemon user
 USER rainfalld
 WORKDIR /var/cache/rainfall-predictor
