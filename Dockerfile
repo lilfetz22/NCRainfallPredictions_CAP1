@@ -1,6 +1,6 @@
 FROM python:3
 
-WORKDIR /usr/src/app
+WORKDIR /usr/src/rainfall-predictor
 
 ## Install Dependencies
 COPY src/requirements.txt .
@@ -16,12 +16,23 @@ RUN pip install https://github.com/IntelPython/mkl_fft/archive/v1.0.14.zip \
 				https://github.com/IntelPython/mkl-service/archive/v2.0.2.zip
 
 ## Copy Application Code
-COPY build/* .
-COPY src/main.py .
+COPY build/* ./
 COPY data/* ./data/
+COPY src/main.py ./
+# Entry into /usr/bin for app start
+RUN ln -s "${PWD}/main.py" /usr/bin/rainfall-predictor
 
-## Build User
+## Build System Daemon (no-user-group, system daemon, set $HOME)
+RUN useradd --system --no-user-group --gid daemon \
+			--create-home --home-dir "/var/cache/rainfall-predictor" \
+			rainfalld
+
+## Create output log location
+RUN mkdir -p "/var/log/rainfall-predictor" \
+	&& chown rainfalld "/var/log/rainfall-predictor"
+
+## Run as daemon user
 USER rainfalld
+WORKDIR /var/cache/rainfall-predictor
+CMD [ "python", "/usr/bin/rainfall-predictor" ]
 
-## Run
-CMD [ "python", "/usr/src/app/main.py" ]
