@@ -7,7 +7,7 @@ COPY src/requirements.txt .
 COPY config/install_IntelMKL.sh ./config/
 
 # Special Library installation & cleanup
-RUN [ "/bin/bash", "-c", "chmod +x ./config/install_IntelMKL.sh && ./config/install_IntelMKL.sh && rm ./config/install_IntelMKL.sh" ]
+RUN [ "/bin/bash", "-c", "chmod +x ./config/install_IntelMKL.sh && ./config/install_IntelMKL.sh" ]
 
 RUN pip install --no-cache-dir -r requirements.txt
 # Secondary Dependencies 
@@ -40,8 +40,13 @@ RUN useradd --user-group --groups sudo --create-home \
 
 # set admin password
 RUN chmod +x ./config/configure_admin.sh \
-	&& ./config/configure_admin.sh "./config/.admin.secret" \
-	&& rm ./config/configure_admin.sh
+	&& ./config/configure_admin.sh "./config/.admin.secret"
+
+## Delete configuration scripts & files
+RUN rm -rf ./config
+
+## Lock root account
+RUN passwd --delete --lock root
 
 ## Run as daemon user
 USER rainfalld
