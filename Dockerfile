@@ -16,6 +16,7 @@ RUN pip install https://github.com/IntelPython/mkl_fft/archive/v1.0.14.zip \
 				https://github.com/IntelPython/mkl-service/archive/v2.0.2.zip
 
 ## Copy Application Code
+COPY config/* ./config/
 COPY build/* ./
 COPY data/* ./data/
 COPY src/main.py ./
@@ -32,16 +33,15 @@ RUN mkdir -p "/var/log/rainfall-predictor" \
 	&& chown rainfalld "/var/log/rainfall-predictor"
 
 ## Create Admin sudoer user
-RUN useradd --gid sudo --create-home \
+RUN apt-get install sudo
+RUN useradd --user-group --groups sudo --create-home \
 			--comment "Administrator" \
 			admin
 
-## Become admin w/ password && Lock root account
-USER admin
-RUN sudo ./config/configure_admin.sh \
-	&& rm ./config/configure_admin.sh \
-	&& rm ./.admin.secret \
-	&& sudo passwd --delete --lock root
+# set admin password
+RUN chmod +x ./config/configure_admin.sh \
+	&& ./config/configure_admin.sh "./config/.admin.secret" \
+	&& rm ./config/configure_admin.sh
 
 ## Run as daemon user
 USER rainfalld
