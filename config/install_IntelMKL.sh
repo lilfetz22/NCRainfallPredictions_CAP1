@@ -3,7 +3,7 @@
 ## cf https://software.intel.com/en-us/articles/installing-intel-free-libs-and-python-apt-repo
 
 cd /tmp
-wget https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS-2019.PUB
+wget --no-verbose https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS-2019.PUB
 apt-key add GPG-PUB-KEY-INTEL-SW-PRODUCTS-2019.PUB
 
 

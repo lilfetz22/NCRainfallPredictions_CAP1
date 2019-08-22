@@ -167,32 +167,36 @@ main() {
 		--tag "$REPO/$NAME:latest" \
 		"$DIRNAME"
 		# --squash \
-	DOCKER_BUILD_STOPS="$(timestamp)"
 
 	# Handle Docker build status 
 	if [ "$?" != 0 ]; then
 		echo "[DOCKERIFY] Error occured.  Aborting..." >&2 && echo && exit 1;
-	else
-		SCRIPT_STOPS="$(timestamp)"
-		IMAGE_SIZE="$(docker images | awk '{print $7}' | awk 'NR==2')"
-		echo "[DOCKERIFY] compressing image..."
-		docker save "$REPO/$NAME:latest" | gzip > "$DIRNAME/$IMAGE_DIR/$IMAGE_NAME.tar.gz" 
-		echo && echo "[DOCKERIFY] SUCCESS: Docker image created at $IMAGE_DIR/$IMAGE_NAME.tar.gz";
-		echo "[DOCKERIFY] Docker Image ($IMAGE_SIZE) built in $(($DOCKER_BUILD_STOPS-$DOCKER_BUILD_STARTS)) seconds." && echo;
-		echo "[DOCKERIFY] Total Execution Time: $(($SCRIPT_STOPS-$SCRIPT_STARTS)) seconds" && echo;
-		# Instructions
-		echo "  NEXT STEPS  "
-		echo " ------------ "
-		echo "1. Connect to docker server instance.";
-		echo "2. Unzip file with gzip.";
-		echo "3. Load this docker image with the command: "
-		echo "     $ docker load -i <path/to/$IMAGE_NAME.tar>"
-		echo "";
-		# echo "OR";
-		# echo "1. Run Deploy script";
-		# echo "     $ ./scripts/deploy.sh <target_environment>"
-		# echo "";
 	fi
+
+	DOCKER_BUILD_STOPS="$(timestamp)"
+
+	IMAGE_SIZE="$(docker images | awk '{print $7}' | awk 'NR==2')"
+	echo && echo "[DOCKERIFY] Docker Image ($IMAGE_SIZE) built in $(($DOCKER_BUILD_STOPS-$DOCKER_BUILD_STARTS)) seconds.";
+
+	echo "[DOCKERIFY] compressing image..."
+	docker save "$REPO/$NAME:latest" | gzip > "$DIRNAME/$IMAGE_DIR/$IMAGE_NAME.tar.gz"
+	ZIPPED_SIZE="$(ls -lh "$DIRNAME/$IMAGE_DIR/$IMAGE_NAME.tar.gz" | awk '{print $5}' | awk 'NR==1')"
+	echo "[DOCKERIFY] SUCCESS: Compressed Docker image (${ZIPPED_SIZE}B) saved as $IMAGE_DIR/$IMAGE_NAME.tar.gz";
+
+	SCRIPT_STOPS="$(timestamp)"
+	echo "[DOCKERIFY] Total Execution Time: $(($SCRIPT_STOPS-$SCRIPT_STARTS)) seconds" && echo;
+	# Instructions
+	echo "  NEXT STEPS  "
+	echo " ------------ "
+	echo "1. Connect to docker server instance.";
+	echo "2. Unzip file with gzip.";
+	echo "3. Load this docker image with the command: "
+	echo "     $ docker load -i <path/to/$IMAGE_NAME.tar>"
+	echo "";
+	# echo "OR";
+	# echo "1. Run Deploy script";
+	# echo "     $ ./scripts/deploy.sh <target_environment>"
+	# echo "";
 }
 
 # ------------------------------
