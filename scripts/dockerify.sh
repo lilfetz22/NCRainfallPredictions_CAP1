@@ -155,18 +155,18 @@ main() {
 	# docker build [tag(s), output destination, PATH/directory of Dockerfile & context]
 	echo "[DOCKERIFY]" \
 			"docker build" \
-				$TAG \
 				--tag "$REPO/$NAME:latest" \
 				"$DIRNAME"
 				# --squash \
+				# $TAG \
 	
 	# actual command
 	DOCKER_BUILD_STARTS="$(timestamp)"
 	docker build \
-		$TAG \
 		--tag "$REPO/$NAME:latest" \
 		"$DIRNAME"
 		# --squash \
+		# $TAG \
 
 	# Handle Docker build status 
 	if [ "$?" != 0 ]; then
