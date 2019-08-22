@@ -156,16 +156,16 @@ main() {
 	echo "[DOCKERIFY]" \
 			"docker build" \
 				--tag "$REPO/$NAME:latest" \
+				--squash \
 				"$DIRNAME"
-				# --squash \
 				# $TAG \
 	
 	# actual command
 	DOCKER_BUILD_STARTS="$(timestamp)"
 	docker build \
 		--tag "$REPO/$NAME:latest" \
+		--squash \
 		"$DIRNAME"
-		# --squash \
 		# $TAG \
 
 	# Handle Docker build status 
