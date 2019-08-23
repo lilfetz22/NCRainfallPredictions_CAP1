@@ -121,7 +121,7 @@ def maeFinder(train_data, test_data, exotrain=None, exotest=None):
 
     predictions = model_creation_pred_one_step(clone_train_data, clone_test_data, clone_exotrain, clone_exotest)
     mae = mean_absolute_error(testing_data, predictions)
-	return(mae)
+    return(mae)
 
 
 def exog_combinations(df, exoe):
@@ -159,39 +159,40 @@ def exogenous_var(data, ncloc, l_exoloc):
     keymae = maeFinder(tr, test)
     print('keymae of: '+ key +' = '+str(keymae))
     bettermae = {}
-	bettermaeLock = Lock()
-
-	def find_exmae(exog, l):
-		extr, extest = train_test_split(exog, 0.2, False)
-		exmae = maeFinder(tr, test, extr, extest)
-	    co = tuple(exog.columns)
+    bettermaeLock = Lock()
+    
+    def find_exmae(exog, l):
+        extr, extest = train_test_split(exog, 0.2, False)
+        exmae = maeFinder(tr, test, extr, extest)
+        co = tuple(exog.columns)
         if result["exmae"] < keymae:
-			l.acquire()
-			try:
-				bettermae[co] = exmae
-				bettermae2 = {key: bettermae}
-			finally:
-				l.release()
-		
-		return { "co": co, "exmae": exmae }
-
-	def on_success(result):
+            l.acquire()
+            try:
+                bettermae[co] = exmae
+                bettermae2 = {key: bettermae}
+            finally:
+                l.release()
+        
+        return { "co": co, "exmae": exmae }
+    
+    def on_success(result):
         print('exmae = {}'.format(result["co"]) + ' '+ str(result["exmae"]))
-
-	def on_error():
+    
+    def on_error():
 		# do something
-	
+        pass
+    
+    
+    process_limit = multiprocessing.cpu_count()-1
+    pool = multiprocessing.Semaphore(process_limit)
+    # num_exmaes = len(list(l_exoloc.keys()))
+    for exog in l_exoloc:
+        pool.apply_async(find_exmae, (exog, bettermaeLock), None, on_success, on_error)
+    
+    pool.close()
+    pool.join()
 
-	process_limit = multiprocessing.cpu_count()-1
-	pool = multiprocessing.Semaphore(process_limit)
-	# num_exmaes = len(list(l_exoloc.keys()))
-	for exog in l_exoloc:
-		pool.apply_async(find_exmae, (exog, bettermaeLock), None, on_success, on_error)
-
-	pool.close()
-	pool.join()
-
-	return()
+    return()
 
     # for exog in tqdm(l_exoloc):
     #     extr, extest = train_test_split(exog, 0.2, False)
