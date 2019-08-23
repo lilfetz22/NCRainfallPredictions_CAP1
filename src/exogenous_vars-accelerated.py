@@ -3,13 +3,13 @@ import numpy as np
 import csv
 import statsmodels.api as sm
 import warnings
+import multiprocessing
 from tqdm import tqdm_notebook as tqdm
 from sklearn.model_selection import train_test_split
 from itertools import combinations
 from scipy import stats
 from datetime import datetime
 from sklearn.metrics import mean_absolute_error
-from multiprocessing
 
 file = 'rainfalldata.csv'
 rd = pd.read_csv(file)
