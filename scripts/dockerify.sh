@@ -199,6 +199,31 @@ main() {
 	# echo "";
 }
 
+keep_awake() {
+	if [[ "$OSTYPE" == "linux-gnu" ]]; then
+		# disable sleep, set TRAP to re-enable sleep capability, execute script
+		targets="sleep.target suspend.target hibernate.target hybrid-sleep.target"
+		sudo systemctl mask $targets
+		trap "sudo systemctl unmask $targets" ERR EXIT
+		$1	# run intended script/function
+		return "$?"
+
+	elif [[ "$OSTYPE" == "darwin"* ]]; then		# Mac OSX
+		caffeinate -i $1
+		return 
+
+	elif [[ "$OSTYPE" == "cygwin" ]]; then		# POSIX compatibility layer and linux env emulation for windows
+	elif [[ "$OSTYPE" == "msys" ]]; then		# lightweight shell and GNU utilities for Windows (part of MinGW)
+	elif [[ "$OSTYPE" == "win32" ]]; then		# maybe windows
+	elif [[ "$OSTYPE" == "freebsd"* ]]; then	# FreeBSD
+	else
+		# Unknown
+	fi
+
+	# FALL THROUGH default
+	$1		# run like normal
+}
+
 # ------------------------------
 # CODE START - Ingest line args
 # ------------------------------
@@ -206,5 +231,5 @@ process_args "$@";
 
 check_prereqs || exit 1;
 
-main                    # Run Main Loop
+keep_awake main                    # Run Main Loop
 exit 0;
