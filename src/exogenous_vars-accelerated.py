@@ -1,3 +1,5 @@
+import os
+import getpass
 import pandas as pd
 import numpy as np
 import csv
@@ -91,9 +93,7 @@ def sarima_model_creation(data, p, d, q, P, D, Q, m, exog=None):
 def model_creation_pred_one_step(train_data, test_data, exotrain=None, exotest=None):
     list_one_step = []
 
-    mod = sarima_model_creation(train_data, 4, 0, 3, 3, 0, 4, 12, exotrain)
-	# if exists, passing exotrain's prevMonth (december, for forecasting jan), otherwise only forcast based on model
-    nextMonth = mod.forecast() if exotrain is None else mod.forecast( exotrain.iloc[[-1]] ) 		# turnary assignment expression
+    nextMonth = model_based_forecast(train_data, test_data, exotrain, exotest)
     list_one_step.append(nextMonth[0]) 					# captures prediction
 
     # if test data exists
@@ -112,6 +112,14 @@ def model_creation_pred_one_step(train_data, test_data, exotrain=None, exotest=N
     
     return(list_one_step)
 
+# Function : Make forecast from model
+# @return -- a forecast of next month's rain amount
+def model_based_forecast(train_data, test_data, exotrain=None, exotest=None):
+    mod = sarima_model_creation(train_data, 4, 0, 3, 3, 0, 4, 12, exotrain)
+    # if exists, passing exotrain's prevMonth (december, for forecasting jan), otherwise only forcast based on model
+    nextMonth = mod.forecast() if exotrain is None else mod.forecast( exotrain.iloc[[-1]] )       # turnary assignment expression
+    return(nextMonth)
+
 # previously billsFn
 def maeFinder(train_data, test_data, exotrain=None, exotest=None):
     clone_train_data = train_data.copy()
@@ -120,7 +128,7 @@ def maeFinder(train_data, test_data, exotrain=None, exotest=None):
     clone_exotest = exotest if exotest is None else exotest.copy()
 
     predictions = model_creation_pred_one_step(clone_train_data, clone_test_data, clone_exotrain, clone_exotest)
-    mae = mean_absolute_error(testing_data, predictions)
+    mae = mean_absolute_error(test_data, predictions)
     return(mae)
 
 
@@ -141,7 +149,12 @@ def exog_combinations(df, exoe):
 
 exogen.keys()
 
-todokeys = ('Roanoke Rapids, NC', 'Murfreesboro, NC', 'Lumberton Area, NC', 'LONGWOOD, NC', 'WHITEVILLE 7 NW, NC', 'Charlotte Area, NC', 'Mount Mitchell Area, NC', 'ASHEVILLE AIRPORT, NC', 'BANNER ELK, NC', 'BEECH MOUNTAIN, NC', 'BRYSON CITY 4, NC', 'BREVARD, NC', 'CASAR, NC', 'COWEETA EXP STATION, NC', 'CULLOWHEE, NC', 'FOREST CITY 8 W, NC', 'FRANKLIN, NC', 'GASTONIA, NC', 'GRANDFATHER MTN, NC', ' HENDERSONVILLE 1 NE, NC', ' HIGHLANDS, NC', 'HOT SPRINGS, NC', 'LAKE LURE 2, NC', 'LAKE TOXAWAY 2 SW, NC', 'MARSHALL, NC', 'MONROE 2 SE, NC', ' MOUNT HOLLY 4 NE, NC', ' OCONALUFTEE, NC', 'PISGAH FOREST 3 NE, NC', 'ROBBINSVILLE AG 5 NE, NC', 'ROSMAN, NC', 'SHELBY 2 NW, NC', 'TAPOCO, NC', 'TRYON, NC', 'WAYNESVILLE 1 E, NC', 'Boone 1 SE, NC', 'DANBURY, NC', 'EDEN, NC', ' MOUNT AIRY 2 W, NC', 'REIDSVILLE 2 NW, NC', 'HAYESVILLE 1 NE, NC', 'MURPHY 4ESE, NC', ' KING, NC')
+# Defining set of cities to evaluate
+if getpass.getuser() == "rainfalld":       # docker daemon, automatically do all exogen
+    todokeys = exogen.keys()
+else:    # manual setting of dictionary elements to do
+    todokeys = ('Roanoke Rapids, NC', 'Murfreesboro, NC', 'Lumberton Area, NC', 'LONGWOOD, NC', 'WHITEVILLE 7 NW, NC', 'Charlotte Area, NC', 'Mount Mitchell Area, NC', 'ASHEVILLE AIRPORT, NC', 'BANNER ELK, NC', 'BEECH MOUNTAIN, NC', 'BRYSON CITY 4, NC', 'BREVARD, NC', 'CASAR, NC', 'COWEETA EXP STATION, NC', 'CULLOWHEE, NC', 'FOREST CITY 8 W, NC', 'FRANKLIN, NC', 'GASTONIA, NC', 'GRANDFATHER MTN, NC', ' HENDERSONVILLE 1 NE, NC', ' HIGHLANDS, NC', 'HOT SPRINGS, NC', 'LAKE LURE 2, NC', 'LAKE TOXAWAY 2 SW, NC', 'MARSHALL, NC', 'MONROE 2 SE, NC', ' MOUNT HOLLY 4 NE, NC', ' OCONALUFTEE, NC', 'PISGAH FOREST 3 NE, NC', 'ROBBINSVILLE AG 5 NE, NC', 'ROSMAN, NC', 'SHELBY 2 NW, NC', 'TAPOCO, NC', 'TRYON, NC', 'WAYNESVILLE 1 E, NC', 'Boone 1 SE, NC', 'DANBURY, NC', 'EDEN, NC', ' MOUNT AIRY 2 W, NC', 'REIDSVILLE 2 NW, NC', 'HAYESVILLE 1 NE, NC', 'MURPHY 4ESE, NC', ' KING, NC')
+
 sub_exogen = {k: exogen[k] for k in todokeys}
 
 from collections import defaultdict
@@ -159,13 +172,13 @@ def exogenous_var(data, ncloc, l_exoloc):
     keymae = maeFinder(tr, test)
     print('keymae of: '+ key +' = '+str(keymae))
     bettermae = {}
-    bettermaeLock = Lock()
+    bettermaeLock = multiprocessing.Lock()
     
     def find_exmae(exog, l):
         extr, extest = train_test_split(exog, 0.2, False)
         exmae = maeFinder(tr, test, extr, extest)
         co = tuple(exog.columns)
-        if result["exmae"] < keymae:
+        if exmae < keymae:
             l.acquire()
             try:
                 bettermae[co] = exmae
@@ -183,7 +196,7 @@ def exogenous_var(data, ncloc, l_exoloc):
         pass
     
     
-    process_limit = multiprocessing.cpu_count()-1
+    process_limit = multiprocessing.cpu_count()
     pool = multiprocessing.Semaphore(process_limit)
     # num_exmaes = len(list(l_exoloc.keys()))
     for exog in l_exoloc:
