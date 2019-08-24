@@ -175,12 +175,12 @@ main() {
 
 	DOCKER_BUILD_STOPS="$(timestamp)"
 
-	IMAGE_SIZE="$(docker images | awk '{print $7}' | awk 'NR==2')"
+	IMAGE_SIZE="$(docker images | awk -F "[ ][ ]+" '{print $5}' | awk 'NR==2')"
 	echo && echo "[DOCKERIFY] Docker Image ($IMAGE_SIZE) built in $(($DOCKER_BUILD_STOPS-$DOCKER_BUILD_STARTS)) seconds.";
 
 	echo "[DOCKERIFY] compressing image..."
 	docker save "$REPO/$NAME:latest" | gzip > "$DIRNAME/$IMAGE_DIR/$IMAGE_NAME.tar.gz"
-	ZIPPED_SIZE="$(ls -lh "$DIRNAME/$IMAGE_DIR/$IMAGE_NAME.tar.gz" | awk '{print $5}' | awk 'NR==1')"
+	ZIPPED_SIZE="$(ls -lh "$DIRNAME/$IMAGE_DIR/$IMAGE_NAME.tar.gz" | awk -F "[ ]+" '{print $5}')"
 	echo "[DOCKERIFY] SUCCESS: Compressed Docker image (${ZIPPED_SIZE}B) saved as $IMAGE_DIR/$IMAGE_NAME.tar.gz";
 
 	SCRIPT_STOPS="$(timestamp)"
