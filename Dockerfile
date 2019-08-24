@@ -20,7 +20,8 @@ COPY config/* ./config/
 COPY build/* ./
 COPY data/* ./data/
 COPY src/main.py ./
-# Entry into /usr/bin for app start
+# Enable script to execute & add entry into /usr/bin for app start
+RUN chmod +x ./main.py
 RUN ln -s "${PWD}/main.py" /usr/bin/rainfall-predictor
 
 ## Build System Daemon (no-user-group, system daemon, set $HOME)
