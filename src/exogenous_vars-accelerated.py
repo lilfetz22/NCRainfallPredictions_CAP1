@@ -1,3 +1,9 @@
+#!/usr/bin/env python
+# coding: utf-8
+
+# In[1]:
+
+
 import os
 import getpass
 import pandas as pd
@@ -13,62 +19,100 @@ from scipy import stats
 from datetime import datetime
 from sklearn.metrics import mean_absolute_error
 
-file = 'rainfalldata.csv'
+try: 
+    __file__
+except:
+    curr_dir = os.path.abspath('')
+else:
+    curr_dir = os.path.dirname(os.path.abspath(__file__))
+    
+app_root = curr_dir if os.path.basename(curr_dir) != "src" else os.path.dirname(curr_dir)
+
+if getpass.getuser() == "rainfalld":  # docker daemon
+    home = os.path.expanduser("~")
+    destdir = home                    # /var/cache/rainfall-predictor
+else:
+    destdir = os.path.join(app_root,'data')      # non-docker stay in repository
+
+
+file = os.path.join(app_root,'data','rainfalldata.csv')
 rd = pd.read_csv(file)
-file2 = 'ncrainfalldata.csv'
+file2 = os.path.join(app_root,'data','ncrainfalldata.csv')
 ncrd = pd.read_csv(file2)
 rd.Date = pd.to_datetime(rd.Date)
 rd = rd.set_index('Date')
 
-#%store -r exogen
-exogen = {
- 'Arcola, NC': ['John Kerr Dam, VA'],
- 'Henderson 2 NNW, NC': ['John Kerr Dam, VA'],
- 'Laurinburg, NC': [' DILLON, SC', ' CHERAW, SC'],
- 'Roanoke Rapids, NC': ['Emporia, VA'],
- 'Murfreesboro, NC': ['Emporia, VA'],
- 'Lumberton Area, NC': [' DILLON, SC'],
- 'LONGWOOD, NC': [' LORIS 2 S, SC', 'Myrtle Beach Area, SC'],
- 'WHITEVILLE 7 NW, NC': [' LORIS 2 S, SC'],
- 'Charlotte Area, NC': ['CATAWBA, SC', 'FORT MILL 4 NW, SC'],
- 'Mount Mitchell Area, NC': ['ERWIN 1 W, TN'],
- 'ASHEVILLE AIRPORT, NC': ['CAESARS HEAD, SC', 'CLEVELAND 3S, SC'],
- 'BANNER ELK, NC': ['ELIZABETHTON, TN','ERWIN 1 W, TN','ROAN MOUNTAIN 3SW, TN'],
- 'BEECH MOUNTAIN, NC': ['BRISTOL AP, TN', 'ELIZABETHTON, TN','ERWIN 1 W, TN','ROAN MOUNTAIN 3SW, TN'],
- 'BRYSON CITY 4, NC': ['GATLINBURG 2 SW, TN', 'MT LECONTE, TN', 'NEWFOUND GAP, TN', ' TOWNSEND 5S, TN'],
- 'BREVARD, NC': ['Pickens Area, SC', 'CAESARS HEAD, SC', 'CLEVELAND 3S, SC'],
- 'CASAR, NC': ['CHESNEE 7 WSW, SC', 'GAFFNEY 6 E, SC'],
- 'COWEETA EXP STATION, NC': ['LONG CREEK, SC', 'WALHALLA, SC', 'CLAYTON 1 SSW, GA', ' HELEN, GA', 'SAUTEE 3W, GA'],
- 'CULLOWHEE, NC': ['MT LECONTE, TN', 'NEWFOUND GAP, TN'],
- 'FOREST CITY 8 W, NC': ['CHESNEE 7 WSW, SC','GAFFNEY 6 E, SC','SPARTANBURG 3 SSE, SC'],
- 'FRANKLIN, NC': ['LONG CREEK, SC', 'CLAYTON 1 SSW, GA', 'NEWFOUND GAP, TN'],
- 'GASTONIA, NC': ['FORT MILL 4 NW, SC', 'GAFFNEY 6 E, SC'],
- 'GRANDFATHER MTN, NC': ['ELIZABETHTON, TN', 'ROAN MOUNTAIN 3SW, TN'],
- ' HENDERSONVILLE 1 NE, NC': ['CAESARS HEAD, SC', 'CLEVELAND 3S, SC'],
- ' HIGHLANDS, NC': ['Pickens Area, SC','LONG CREEK, SC','WALHALLA, SC','CLAYTON 1 SSW, GA'],
- 'HOT SPRINGS, NC': ['ERWIN 1 W, TN','GREENEVILLE EXP STA, TN','NEWPORT 1 NW, TN'],
- 'LAKE LURE 2, NC': ['CHESNEE 7 WSW, SC', 'CLEVELAND 3S, SC'],
- 'LAKE TOXAWAY 2 SW, NC': ['Pickens Area, SC','CAESARS HEAD, SC','CLEVELAND 3S, SC','LONG CREEK, SC','WALHALLA, SC'],
- 'MARSHALL, NC': ['ERWIN 1 W, TN','GREENEVILLE EXP STA, TN','NEWPORT 1 NW, TN'],
- 'MONROE 2 SE, NC': ['PAGELAND 9.0 WNW, SC','CATAWBA, SC','FORT MILL 4 NW, SC'],
- ' MOUNT HOLLY 4 NE, NC': ['FORT MILL 4 NW, SC'],
- ' OCONALUFTEE, NC': ['GATLINBURG 2 SW, TN','MT LECONTE, TN','NEWFOUND GAP, TN',' TOWNSEND 5S, TN'],
- 'PISGAH FOREST 3 NE, NC': ['Pickens Area, SC','CAESARS HEAD, SC','CLEVELAND 3S, SC'],
- 'ROBBINSVILLE AG 5 NE, NC': ['MT LECONTE, TN','NEWFOUND GAP, TN',' TOWNSEND 5S, TN'],
- 'ROSMAN, NC': ['Pickens Area, SC','CAESARS HEAD, SC','CLEVELAND 3S, SC','WALHALLA, SC'],
- 'SHELBY 2 NW, NC': ['CHESNEE 7 WSW, SC', 'GAFFNEY 6 E, SC'],
- 'TAPOCO, NC': ['GATLINBURG 2 SW, TN', 'NEWFOUND GAP, TN', ' TOWNSEND 5S, TN'],
- 'TRYON, NC': ['Greenville-Spartanburg Area, SC','CAESARS HEAD, SC','CHESNEE 7 WSW, SC','CLEVELAND 3S, SC', 'SPARTANBURG 3 SSE, SC'],
- 'WAYNESVILLE 1 E, NC': ['MT LECONTE, TN', 'NEWFOUND GAP, TN'],
- 'Boone 1 SE, NC': ['ROAN MOUNTAIN 3SW, TN'],
- 'DANBURY, NC': ['MARTINSVILLE FILTER PLANT, VA', 'MEADOWS OF DAN 5 SW, VA','STUART, VA'],
- 'EDEN, NC': ['CHATHAM, VA', 'MARTINSVILLE FILTER PLANT, VA', 'STUART, VA'],
- ' MOUNT AIRY 2 W, NC': ['MEADOWS OF DAN 5 SW, VA', 'STUART, VA'],
- 'REIDSVILLE 2 NW, NC': ['MARTINSVILLE FILTER PLANT, VA'],
- 'HAYESVILLE 1 NE, NC': ['CLAYTON 1 SSW, GA','BLAIRSVILLE EXP STA, GA',' HELEN, GA','SAUTEE 3W, GA'],
- 'MURPHY 4ESE, NC': ['BLAIRSVILLE EXP STA, GA'],
- ' KING, NC': ['STUART, VA']
-}
+
+# In[2]:
+
+
+import json
+# this cell takes the stored exogen dictionary that is stored in the Data_Wrangling_CAP1 jupyter notebook
+# that was imported above.
+try:
+    get_ipython().run_line_magic('store', '-r exogen')
+except NameError:
+    # f = open(os.path.join(destdir,"exogen.json"),"r")
+    # exogen = json.load(f)      # read from file, passed from Data_Wrangling
+    # f.close()
+    exogen = {
+        'Arcola, NC': ['John Kerr Dam, VA'],
+        'Henderson 2 NNW, NC': ['John Kerr Dam, VA'],
+        'Laurinburg, NC': [' DILLON, SC', ' CHERAW, SC'],
+        'Roanoke Rapids, NC': ['Emporia, VA'],
+        'Murfreesboro, NC': ['Emporia, VA'],
+        'Lumberton Area, NC': [' DILLON, SC'],
+        'LONGWOOD, NC': [' LORIS 2 S, SC', 'Myrtle Beach Area, SC'],
+        'WHITEVILLE 7 NW, NC': [' LORIS 2 S, SC'],
+        'Charlotte Area, NC': ['CATAWBA, SC', 'FORT MILL 4 NW, SC'],
+        'Mount Mitchell Area, NC': ['ERWIN 1 W, TN'],
+        'ASHEVILLE AIRPORT, NC': ['CAESARS HEAD, SC', 'CLEVELAND 3S, SC'],
+        'BANNER ELK, NC': ['ELIZABETHTON, TN','ERWIN 1 W, TN','ROAN MOUNTAIN 3SW, TN'],
+        'BEECH MOUNTAIN, NC': ['BRISTOL AP, TN', 'ELIZABETHTON, TN','ERWIN 1 W, TN','ROAN MOUNTAIN 3SW, TN'],
+        'BRYSON CITY 4, NC': ['GATLINBURG 2 SW, TN', 'MT LECONTE, TN', 'NEWFOUND GAP, TN', ' TOWNSEND 5S, TN'],
+        'BREVARD, NC': ['Pickens Area, SC', 'CAESARS HEAD, SC', 'CLEVELAND 3S, SC'],
+        'CASAR, NC': ['CHESNEE 7 WSW, SC', 'GAFFNEY 6 E, SC'],
+        'COWEETA EXP STATION, NC': ['LONG CREEK, SC', 'WALHALLA, SC', 'CLAYTON 1 SSW, GA', ' HELEN, GA', 'SAUTEE 3W, GA'],
+        'CULLOWHEE, NC': ['MT LECONTE, TN', 'NEWFOUND GAP, TN'],
+        'FOREST CITY 8 W, NC': ['CHESNEE 7 WSW, SC','GAFFNEY 6 E, SC','SPARTANBURG 3 SSE, SC'],
+        'FRANKLIN, NC': ['LONG CREEK, SC', 'CLAYTON 1 SSW, GA', 'NEWFOUND GAP, TN'],
+        'GASTONIA, NC': ['FORT MILL 4 NW, SC', 'GAFFNEY 6 E, SC'],
+        'GRANDFATHER MTN, NC': ['ELIZABETHTON, TN', 'ROAN MOUNTAIN 3SW, TN'],
+        ' HENDERSONVILLE 1 NE, NC': ['CAESARS HEAD, SC', 'CLEVELAND 3S, SC'],
+        ' HIGHLANDS, NC': ['Pickens Area, SC','LONG CREEK, SC','WALHALLA, SC','CLAYTON 1 SSW, GA'],
+        'HOT SPRINGS, NC': ['ERWIN 1 W, TN','GREENEVILLE EXP STA, TN','NEWPORT 1 NW, TN'],
+        'LAKE LURE 2, NC': ['CHESNEE 7 WSW, SC', 'CLEVELAND 3S, SC'],
+        'LAKE TOXAWAY 2 SW, NC': ['Pickens Area, SC','CAESARS HEAD, SC','CLEVELAND 3S, SC','LONG CREEK, SC','WALHALLA, SC'],
+        'MARSHALL, NC': ['ERWIN 1 W, TN','GREENEVILLE EXP STA, TN','NEWPORT 1 NW, TN'],
+        'MONROE 2 SE, NC': ['PAGELAND 9.0 WNW, SC','CATAWBA, SC','FORT MILL 4 NW, SC'],
+        ' MOUNT HOLLY 4 NE, NC': ['FORT MILL 4 NW, SC'],
+        ' OCONALUFTEE, NC': ['GATLINBURG 2 SW, TN','MT LECONTE, TN','NEWFOUND GAP, TN',' TOWNSEND 5S, TN'],
+        'PISGAH FOREST 3 NE, NC': ['Pickens Area, SC','CAESARS HEAD, SC','CLEVELAND 3S, SC'],
+        'ROBBINSVILLE AG 5 NE, NC': ['MT LECONTE, TN','NEWFOUND GAP, TN',' TOWNSEND 5S, TN'],
+        'ROSMAN, NC': ['Pickens Area, SC','CAESARS HEAD, SC','CLEVELAND 3S, SC','WALHALLA, SC'],
+        'SHELBY 2 NW, NC': ['CHESNEE 7 WSW, SC', 'GAFFNEY 6 E, SC'],
+        'TAPOCO, NC': ['GATLINBURG 2 SW, TN', 'NEWFOUND GAP, TN', ' TOWNSEND 5S, TN'],
+        'TRYON, NC': ['Greenville-Spartanburg Area, SC','CAESARS HEAD, SC','CHESNEE 7 WSW, SC','CLEVELAND 3S, SC', 'SPARTANBURG 3 SSE, SC'],
+        'WAYNESVILLE 1 E, NC': ['MT LECONTE, TN', 'NEWFOUND GAP, TN'],
+        'Boone 1 SE, NC': ['ROAN MOUNTAIN 3SW, TN'],
+        'DANBURY, NC': ['MARTINSVILLE FILTER PLANT, VA', 'MEADOWS OF DAN 5 SW, VA','STUART, VA'],
+        'EDEN, NC': ['CHATHAM, VA', 'MARTINSVILLE FILTER PLANT, VA', 'STUART, VA'],
+        ' MOUNT AIRY 2 W, NC': ['MEADOWS OF DAN 5 SW, VA', 'STUART, VA'],
+        'REIDSVILLE 2 NW, NC': ['MARTINSVILLE FILTER PLANT, VA'],
+        'HAYESVILLE 1 NE, NC': ['CLAYTON 1 SSW, GA','BLAIRSVILLE EXP STA, GA',' HELEN, GA','SAUTEE 3W, GA'],
+        'MURPHY 4ESE, NC': ['BLAIRSVILLE EXP STA, GA'],
+        ' KING, NC': ['STUART, VA']
+    }
+
+
+# In[3]:
+
+
+exogen.keys()
+
+
+# In[4]:
+
 
 def sarima_model_creation(data, p, d, q, P, D, Q, m, exog=None):
     my_order = [p,d,q]
@@ -80,7 +124,7 @@ def sarima_model_creation(data, p, d, q, P, D, Q, m, exog=None):
     return(model_fit)
 
 
-
+# In[5]:
 
 
 # Function : make forecast based on provided data
@@ -94,7 +138,7 @@ def model_creation_pred_one_step(train_data, test_data, exotrain=None, exotest=N
     list_one_step = []
 
     nextMonth = model_based_forecast(train_data, test_data, exotrain, exotest)
-    list_one_step.append(nextMonth[0]) 					# captures prediction
+    list_one_step.append(nextMonth[0])             # captures prediction
 
     # if test data exists
     if len(test_data) >= 1:
@@ -109,7 +153,7 @@ def model_creation_pred_one_step(train_data, test_data, exotrain=None, exotest=N
         futurePredictions = model_creation_pred_one_step(train_data, test_data, exotrain, exotest)
         # add to list
         list_one_step.append(futurePredictions)
-    
+        
     return(list_one_step)
 
 # Function : Make forecast from model
@@ -132,6 +176,9 @@ def maeFinder(train_data, test_data, exotrain=None, exotest=None):
     return(mae)
 
 
+# In[6]:
+
+
 def exog_combinations(df, exoe):
     lo_dfs = []
     if len(exoe) == 1:
@@ -149,6 +196,10 @@ def exog_combinations(df, exoe):
 
 exogen.keys()
 
+
+# In[7]:
+
+
 # Defining set of cities to evaluate
 if getpass.getuser() == "rainfalld":       # docker daemon, automatically do all exogen
     todokeys = exogen.keys()
@@ -157,6 +208,10 @@ else:    # manual setting of dictionary elements to do
 
 sub_exogen = {k: exogen[k] for k in todokeys}
 
+
+# In[8]:
+
+
 from collections import defaultdict
 l_o_dfs = defaultdict(list)
 for key,value in tqdm(sub_exogen.items()):
@@ -164,18 +219,22 @@ for key,value in tqdm(sub_exogen.items()):
     l_o_dfs[key] = lo_dfs2
 l_o_dfs['LONGWOOD, NC']
 
+
+# In[9]:
+
+
 def exogenous_var(data, ncloc, l_exoloc):
 #     for key, value in tqdm(exo_dict.items()):
     dat = data[ncloc]
 #         l_exog = exog_combinations(data, value)
-    tr, test = train_test_split(dat, 0.2, False)
+    tr, test = train_test_split(dat, test_size=0.2, shuffle=False)
     keymae = maeFinder(tr, test)
     print('keymae of: '+ key +' = '+str(keymae))
     bettermae = {}
     bettermaeLock = multiprocessing.Lock()
     
     def find_exmae(exog, l):
-        extr, extest = train_test_split(exog, 0.2, False)
+        extr, extest = train_test_split(exog, test_size=0.2, shuffle=False)
         exmae = maeFinder(tr, test, extr, extest)
         co = tuple(exog.columns)
         if exmae < keymae:
@@ -189,21 +248,22 @@ def exogenous_var(data, ncloc, l_exoloc):
         return { "co": co, "exmae": exmae }
     
     def on_success(result):
+        tqdm(l_exoloc); # update counter of completion
         print('exmae = {}'.format(result["co"]) + ' '+ str(result["exmae"]))
     
     def on_error():
-		# do something
+        # do something
         pass
-    
     
     process_limit = multiprocessing.cpu_count()
     pool = multiprocessing.Semaphore(process_limit)
+    tqdm(l_exoloc); # initialize counter
     # num_exmaes = len(list(l_exoloc.keys()))
     for exog in l_exoloc:
         pool.apply_async(find_exmae, (exog, bettermaeLock), None, on_success, on_error)
     
-    pool.close()
-    pool.join()
+    pool.close()      # no more tasks can be added for the pool to accomplish
+    pool.join()       # tell parent to wait until all tasks are accomplished by the process pool
 
     return()
 
@@ -217,7 +277,43 @@ def exogenous_var(data, ncloc, l_exoloc):
     #         bettermae2 = {key: bettermae}
     # return(co)
 
+
+# In[ ]:
+
+
+# best_comb = [[4,3,3,4]]
 warnings.filterwarnings("ignore")
 for key,value in tqdm(l_o_dfs.items()):
     exogenous_var(rd, key, value)
+
+
+# In[ ]:
+
+
+# exogenous_var(rd, sub_exogen, best_comb)
+
+
+# In[ ]:
+
+
+# if you need to pause the code from running and then start back up from where you left off you can use the
+# following code to get a sub_dictionary that will be only a portion of the large dictionary (exogen) that I am
+# using
+
+# I had to do this because my computer started running really slow so I had to restart it in order to let the 
+# memory reset and so it could start running at normal speed again.
+
+# use exogen.keys() to list all of the keys then find the location where you left off from the printout above
+# and then copy and paste the rest of the keys into the "todokeys" tuple below. Then call sub_exogen in place
+# of exogen in the "exogenous_var" function above. 
+
+
+# todokeys = ('Henderson 2 NNW, NC', 'JACKSON SPRINGS 5 WNW, NC', 'Laurinburg, NC', 'Louisburg, NC', 'Roanoke Rapids, NC', 'Rougemont, NC', 'Murfreesboro, NC', 'Lumberton Area, NC', 'ELIZABETHTOWN, NC', 'LONGWOOD, NC', 'WHITEVILLE 7 NW, NC', ' WILLIAM O HUSKE L&D, NC', 'Asheville Area, NC', 'Charlotte Area, NC', 'Mount Mitchell Area, NC', 'ASHEVILLE AIRPORT, NC', 'BANNER ELK, NC', 'BEECH MOUNTAIN, NC', 'BRYSON CITY 4, NC', 'BLACK MOUNTAIN 2 W, NC', 'BREVARD, NC', 'BRIDGEWATER HYDRO, NC', 'CASAR, NC', 'CATAWBA 3 NNW, NC', 'CONCORD, NC', 'COWEETA EXP STATION, NC', 'CULLOWHEE, NC', 'FOREST CITY 8 W, NC', 'FRANKLIN, NC', 'GASTONIA, NC', 'GRANDFATHER MTN, NC', ' HENDERSONVILLE 1 NE, NC', 'Hickory FAA Airport, NC', ' HIGHLANDS, NC', 'HOT SPRINGS, NC', 'LAKE LURE 2, NC', 'LAKE TOXAWAY 2 SW, NC', 'LENOIR, NC', 'LINCOLNTON 4 W, NC', 'MARION, NC', 'MARSHALL, NC', 'MONROE 2 SE, NC', 'MORGANTON, NC')
+# sub_exogen = {k: exogen[k] for k in todokeys}
+
+
+# In[ ]:
+
+
+
 
