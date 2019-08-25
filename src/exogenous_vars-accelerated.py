@@ -11,6 +11,7 @@ import numpy as np
 import csv
 import statsmodels.api as sm
 import warnings
+import copy
 import multiprocessing
 from tqdm import tqdm_notebook as tqdm
 from sklearn.model_selection import train_test_split
@@ -151,8 +152,8 @@ def model_creation_pred_one_step(train_data, test_data, exotrain=None, exotest=N
 
         # execute & capture future predictions
         futurePredictions = model_creation_pred_one_step(train_data, test_data, exotrain, exotest)
-        # add to list
-        list_one_step.append(futurePredictions)
+        # concatenate two lists
+        list_one_step.extend(futurePredictions)
         
     return(list_one_step)
 
@@ -166,10 +167,10 @@ def model_based_forecast(train_data, test_data, exotrain=None, exotest=None):
 
 # previously billsFn
 def maeFinder(train_data, test_data, exotrain=None, exotest=None):
-    clone_train_data = train_data.copy()
-    clone_test_data = test_data.copy()
-    clone_exotrain = exotrain if exotrain is None else exotrain.copy()
-    clone_exotest = exotest if exotest is None else exotest.copy()
+    clone_train_data = copy.deepcopy(train_data)
+    clone_test_data = copy.deepcopy(test_data)
+    clone_exotrain = exotrain if exotrain is None else copy.deepcopy(exotrain)
+    clone_exotest = exotest if exotest is None else copy.deepcopy(exotest)
 
     predictions = model_creation_pred_one_step(clone_train_data, clone_test_data, clone_exotrain, clone_exotest)
     mae = mean_absolute_error(test_data, predictions)
