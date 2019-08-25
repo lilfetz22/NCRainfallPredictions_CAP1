@@ -209,14 +209,15 @@ keep_awake() {
 		return "$?"
 
 	elif [[ "$OSTYPE" == "darwin"* ]]; then		# Mac OSX
-		caffeinate -i $1
+		# caffeinate -i $1
+		$1
 		return 
 
-	elif [[ "$OSTYPE" == "cygwin" ]]; then		# POSIX compatibility layer and linux env emulation for windows
-	elif [[ "$OSTYPE" == "msys" ]]; then		# lightweight shell and GNU utilities for Windows (part of MinGW)
-	elif [[ "$OSTYPE" == "win32" ]]; then		# maybe windows
-	elif [[ "$OSTYPE" == "freebsd"* ]]; then	# FreeBSD
-	else
+	# elif [[ "$OSTYPE" == "cygwin" ]]; then		# POSIX compatibility layer and linux env emulation for windows
+	# elif [[ "$OSTYPE" == "msys" ]]; then		# lightweight shell and GNU utilities for Windows (part of MinGW)
+	# elif [[ "$OSTYPE" == "win32" ]]; then		# maybe windows
+	# elif [[ "$OSTYPE" == "freebsd"* ]]; then	# FreeBSD
+	# else
 		# Unknown
 	fi
 
