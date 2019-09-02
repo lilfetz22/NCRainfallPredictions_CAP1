@@ -25,8 +25,8 @@ usage() {
 }
 help() {
     echo ""
-    echo " Rainfall Estimation Docker Creation Script "
-    echo "--------------------------------------------"
+    echo " Rainfall Predictor Docker Creation Script "
+    echo "-------------------------------------------"
     echo "Docker build script.  Docker packages app files, tags with version and" \
 		 "saves Docker container image." \
     	 "Docker image files are saved to the ${DIRNAME%/}/$IMAGE_DIR directory.";
@@ -50,9 +50,9 @@ help() {
 }
 print_banner() {
 	echo "";
-    echo "=====================================";
-    echo "|   Rainfall Estimation Dockerify   |";
-    echo "=====================================";
+    echo "====================================";
+    echo "|   Dockerify Rainfall Predictor   |";
+    echo "====================================";
 	echo "START: $(date)";
 	echo "";
 }

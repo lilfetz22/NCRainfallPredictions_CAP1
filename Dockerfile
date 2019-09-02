@@ -3,8 +3,8 @@ FROM python:3
 WORKDIR /usr/src/rainfall-predictor
 
 ## Install Dependencies
-COPY src/requirements.txt .
-COPY config/install_IntelMKL.sh ./config/
+COPY requirements.txt .
+COPY dockerconfig/install_IntelMKL.sh ./config/
 
 # Special Library installation & cleanup
 RUN [ "/bin/bash", "-c", "chmod +x ./config/install_IntelMKL.sh && ./config/install_IntelMKL.sh" ]
@@ -16,7 +16,7 @@ RUN pip install https://github.com/IntelPython/mkl_fft/archive/v1.0.14.zip \
 				https://github.com/IntelPython/mkl-service/archive/v2.0.2.zip
 
 ## Copy Application Code
-COPY config/* ./config/
+COPY dockerconfig/* ./config/
 COPY build/* ./
 COPY data/* ./data/
 COPY src/main.py ./

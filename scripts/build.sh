@@ -21,8 +21,8 @@ usage() {
 }
 help() {
     echo ""
-    echo " Rainfall Estimation Build Script "
-    echo "----------------------------------"
+    echo " Rainfall Predictor Build Script "
+    echo "---------------------------------"
     echo "Automated app build script.  Jupyter notebooks are converted to regular python files." \
     	 "Built files are located in the ${DIRNAME%/}/$BUILD_DIR directory." \
     echo ""
@@ -39,9 +39,9 @@ help() {
 }
 print_banner() {
 	echo "";
-    echo "=================================";
-    echo "|   Rainfall Estimation Build   |";
-    echo "=================================";
+    echo "================================";
+    echo "|   Rainfall Predictor Build   |";
+    echo "================================";
 	echo "";
 }
 
