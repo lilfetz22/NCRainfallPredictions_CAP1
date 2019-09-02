@@ -1,4 +1,8 @@
+# python & development directories
 .ipynb_checkpoints/
+__pycache__/
+
+# Project specific ignore entries
 bin
 build
 config/*.secret
