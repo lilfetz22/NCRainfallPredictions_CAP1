@@ -16,9 +16,9 @@ RUN pip install https://github.com/IntelPython/mkl_fft/archive/v1.0.14.zip \
 				https://github.com/IntelPython/mkl-service/archive/v2.0.2.zip
 
 ## Copy Application Code
-COPY dockerconfig/* ./config/
-COPY build/* ./
-COPY data/* ./data/
+COPY dockerconfig/ ./config/
+COPY build/ ./
+COPY data/ ./data/
 COPY src/main.py ./
 # Enable script to execute & add entry into /usr/bin for app start
 RUN chmod +x ./main.py
