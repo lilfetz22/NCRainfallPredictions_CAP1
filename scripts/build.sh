@@ -21,8 +21,8 @@ usage() {
 }
 help() {
     echo ""
-    echo " Rainfall Estimation Build Script "
-    echo "----------------------------------"
+    echo " Rainfall Predictor Build Script "
+    echo "---------------------------------"
     echo "Automated app build script.  Jupyter notebooks are converted to regular python files." \
     	 "Built files are located in the ${DIRNAME%/}/$BUILD_DIR directory." \
     echo ""
@@ -39,16 +39,23 @@ help() {
 }
 print_banner() {
 	echo "";
-    echo "=================================";
-    echo "|   Rainfall Estimation Build   |";
-    echo "=================================";
+    echo "================================";
+    echo "|   Rainfall Predictor Build   |";
+    echo "================================";
 	echo "";
 }
 
 check_prereqs() {
 	missing_prereqs=0
 	command -v jupyter >/dev/null 2>&1 || { ((missing_prereqs++)); echo >&2 "MISSING PREREQ: jupyter is not installed but is required."; }
-
+	if [ -f "$DIRNAME/dockerconfig/.admin.secret" ]; then
+		if [ -z "$(egrep '^admin:[A-Za-z0-9 @#$%^&*()~.,:;_+=<>?-]+$' "$DIRNAME/dockerconfig/.admin.secret")" ]; then
+			((missing_prereqs++)); echo >&2 "PREREQ ERROR: .admin.secret file must match syntax 'admin:password' (no quotes).";
+		fi
+	else
+		((missing_prereqs++)); echo >&2 "MISSING PREREQ: $(basename "$DIRNAME")/dockerconfig/.admin.secret file missing.";
+	fi
+	
 	return "$missing_prereqs"
 }
 

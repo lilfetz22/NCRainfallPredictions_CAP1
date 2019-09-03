@@ -1,8 +1,7 @@
 certifi==2019.6.16
+Cython==0.29.13
+ipywidgets==7.5.1
 joblib==0.13.2
-mkl-fft==1.0.14
-mkl-random==1.0.2
-mkl-service==2.0.2
 numpy==1.16.4
 pandas==0.25.0
 patsy==0.5.1
@@ -15,3 +14,4 @@ sklearn==0.0
 statsmodels==0.10.1
 tqdm==4.32.1
 wincertstore==0.2
+xlrd==1.2.0

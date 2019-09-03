@@ -14,7 +14,7 @@
 DIRNAME="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd )" && DIRNAME="${DIRNAME%/scripts}";
 BUILD_DIR="build"
 IMAGE_DIR="bin"
-AUTHOR="lilFetz22"
+AUTHOR="lilfetz22"
 REPO="$AUTHOR"
 NAME="rainfall"
 
@@ -25,8 +25,8 @@ usage() {
 }
 help() {
     echo ""
-    echo " Rainfall Estimation Docker Creation Script "
-    echo "--------------------------------------------"
+    echo " Rainfall Predictor Docker Creation Script "
+    echo "-------------------------------------------"
     echo "Docker build script.  Docker packages app files, tags with version and" \
 		 "saves Docker container image." \
     	 "Docker image files are saved to the ${DIRNAME%/}/$IMAGE_DIR directory.";
@@ -50,9 +50,9 @@ help() {
 }
 print_banner() {
 	echo "";
-    echo "=====================================";
-    echo "|   Rainfall Estimation Dockerify   |";
-    echo "=====================================";
+    echo "====================================";
+    echo "|   Dockerify Rainfall Predictor   |";
+    echo "====================================";
 	echo "START: $(date)";
 	echo "";
 }
@@ -62,6 +62,11 @@ check_prereqs() {
 	command -v docker >/dev/null 2>&1 || { ((missing_prereqs++)); echo >&2 "MISSING PREREQ: docker is not installed but is required."; }
 	# List additional prereqs here
 	return "$missing_prereqs"
+}
+
+# timestamp function in ms
+timestamp() {
+  date +"%s"
 }
 
 # Process line arguments
@@ -115,21 +120,42 @@ process_args() {
 
 }
 
+if [ -z "$(command -v sha256sum)" ]; then
+    if [ -n "$(command -v shasum)" ]; then      # Mac OSX alternative 
+        sha256sum() {
+            shasum -a 256 "$@"
+        }
+    fi
+fi
+
 main() {
 	[ $MODE_QUIET = true ] && exec 1>/dev/null;
 	print_banner 1>&1;
 
+	SCRIPT_STARTS="$(timestamp)";
+
 	if [ $REBUILD = true ]; then
 		# ensure build files are up to date
-		echo "[DOCKERIFY] Running build script...";
+		echo "[DOCKERIFY] Running code build script...";
+		BUILD_SCRIPT_STARTS=$(timestamp)
 		BUILD_DIR="$BUILD_DIR" "$DIRNAME/scripts/build.sh" &
 		pid=$!
 		wait $pid || { echo "[DOCKERIFY] build failed. Aborting..." 2>&2 && echo && exit 1; }
-		echo "[DOCKERIFY] Build completed!"
+		BUILD_SCRIPT_STOPS=$(timestamp)
+		echo "[DOCKERIFY] Code Build completed! ($(($BUILD_SCRIPT_STOPS-$BUILD_SCRIPT_STARTS)) seconds)" && echo;
 
 	elif [ -z "$(ls -al "$DIRNAME/$BUILD_DIR" | egrep --invert-match '^(.*[ ]((\.)|(\.\.))$)|(total.*$)')" ]; then
 		# build folder is empty
 		echo "MISSING FILES: build directory is empty." >&2 && echo && exit 1;
+	fi
+
+	if [ ! -d "$DIRNAME/$IMAGE_DIR" ]; then
+		echo "[DOCKERIFY] Creating Directory: "
+		echo -n "[DOCKERIFY]   " && echo "$DIRNAME/$IMAGE_DIR"	# macosx mkdir -p -v [path] fails, is official bug
+		mkdir -p "$DIRNAME/$IMAGE_DIR"
+
+	elif [ -z "$(ls -al "$DIRNAME/$IMAGE_DIR" | egrep --invert-match '^(.*[ ]((\.)|(\.\.))$)|(total.*$)')" ]; then
+		rm -rvf "$DIRNAME/$IMAGE_DIR"/*			# clean out image directory
 	fi
 
 	[ -z $VERSION ] && TAG="" || TAG="--tag '$REPO/$NAME:$VERSION'";
@@ -140,35 +166,80 @@ main() {
 	# docker build [tag(s), output destination, PATH/directory of Dockerfile & context]
 	echo "[DOCKERIFY]" \
 			"docker build" \
-				$TAG \
 				--tag "$REPO/$NAME:latest" \
-				--output "$DIRNAME/$IMAGE_DIR/$IMAGE_NAME.tar" \
+				--squash \
 				"$DIRNAME"
+				# $TAG \
 	
 	# actual command
+	DOCKER_BUILD_STARTS="$(timestamp)"
 	docker build \
-		$TAG \
 		--tag "$REPO/$NAME:latest" \
-		--output "$DIRNAME/$IMAGE_DIR/$IMAGE_NAME.tar" \
+		--squash \
 		"$DIRNAME"
-	
+		# $TAG \
+
 	# Handle Docker build status 
 	if [ "$?" != 0 ]; then
 		echo "[DOCKERIFY] Error occured.  Aborting..." >&2 && echo && exit 1;
-	else
-		echo && echo "[DOCKERIFY] SUCCESS: Docker image created at $IMAGE_DIR/$IMAGE_NAME.tar" && echo;
-		# Instructions
-		echo "  NEXT STEPS  "
-		echo " ------------ "
-		echo "1. Connect to docker server instance.";
-		echo "2. Load this docker image with the command: "
-		echo "     $ docker load -i <path/to/$IMAGE_NAME.tar>"
-		echo "";
-		# echo "OR";
-		# echo "1. Run Deploy script";
-		# echo "     $ ./scripts/deploy.sh <target_environment>"
-		# echo "";
 	fi
+
+	DOCKER_BUILD_STOPS="$(timestamp)"
+
+	IMAGE_SIZE="$(docker images | awk -F "[ ][ ]+" '{print $5}' | awk 'NR==2')"
+	echo && echo "[DOCKERIFY] Docker Image ($IMAGE_SIZE) built in $(($DOCKER_BUILD_STOPS-$DOCKER_BUILD_STARTS)) seconds.";
+
+	echo "[DOCKERIFY] compressing image..."
+	docker save "$REPO/$NAME:latest" | gzip > "$DIRNAME/$IMAGE_DIR/$IMAGE_NAME.tar.gz"
+	ZIPPED_SIZE="$(ls -lh "$DIRNAME/$IMAGE_DIR/$IMAGE_NAME.tar.gz" | awk -F "[ ]+" '{print $5}')"
+	echo "[DOCKERIFY] SUCCESS: Compressed Docker image (${ZIPPED_SIZE}B) saved as $IMAGE_DIR/$IMAGE_NAME.tar.gz";
+	echo "$(sha256sum "$DIRNAME/$IMAGE_DIR/$IMAGE_NAME.tar.gz")" > "$DIRNAME/$IMAGE_DIR/sha256.checksum"
+	echo "[DOCKERIFY] sha256: $(cat "$DIRNAME/$IMAGE_DIR/sha256.checksum" | awk -F "[ ]+" '{print $1}')"
+
+	SCRIPT_STOPS="$(timestamp)"
+	echo "[DOCKERIFY] Total Execution Time: $(($SCRIPT_STOPS-$SCRIPT_STARTS)) seconds" && echo;
+	# Instructions
+	echo "  NEXT STEPS  "
+	echo " ------------ "
+	echo "1. Connect to docker server instance.";
+	echo "2. Unzip file with gzip.";
+	echo "3. Load this docker image with the command: "
+	echo "     $ docker load -i <path/to/$IMAGE_NAME.tar>"
+	echo "";
+	# echo "OR";
+	# echo "1. Run Deploy script";
+	# echo "     $ ./scripts/deploy.sh <target_environment>"
+	# echo "";
+}
+
+keep_awake() {
+	if [[ "$OSTYPE" == "linux-gnu" ]]; then
+		# disable sleep, set TRAP to re-enable sleep capability, execute script
+		targets="sleep.target suspend.target hibernate.target hybrid-sleep.target"
+		sudo systemctl mask $targets
+		trap "sudo systemctl unmask $targets" ERR EXIT
+		$1	# run intended script/function
+		return "$?"
+
+	elif [[ "$OSTYPE" == "darwin"* ]]; then		# Mac OSX
+		$1 &
+		pid=$!
+		caffeinate -i -w $pid
+		wait $pid
+		exit_status="$?"
+		[ $exit_status != 0 ] && exit $exit_status;
+		return 
+
+	# elif [[ "$OSTYPE" == "cygwin" ]]; then		# POSIX compatibility layer and linux env emulation for windows
+	# elif [[ "$OSTYPE" == "msys" ]]; then		# lightweight shell and GNU utilities for Windows (part of MinGW)
+	# elif [[ "$OSTYPE" == "win32" ]]; then		# maybe windows
+	# elif [[ "$OSTYPE" == "freebsd"* ]]; then	# FreeBSD
+	# else
+		# Unknown
+	fi
+
+	# FALL THROUGH default
+	$1		# run like normal
 }
 
 # ------------------------------
@@ -178,5 +249,5 @@ process_args "$@";
 
 check_prereqs || exit 1;
 
-main                    # Run Main Loop
+keep_awake main                    # Run Main Loop
 exit 0;
