@@ -120,6 +120,14 @@ process_args() {
 
 }
 
+if [ -z "$(command -v sha256sum)" ]; then
+    if [ -n "$(command -v shasum)" ]; then      # Mac OSX alternative 
+        sha256sum() {
+            shasum -a 256 "$@"
+        }
+    fi
+fi
+
 main() {
 	[ $MODE_QUIET = true ] && exec 1>/dev/null;
 	print_banner 1>&1;
@@ -145,6 +153,9 @@ main() {
 		echo "[DOCKERIFY] Creating Directory: "
 		echo -n "[DOCKERIFY]   " && echo "$DIRNAME/$IMAGE_DIR"	# macosx mkdir -p -v [path] fails, is official bug
 		mkdir -p "$DIRNAME/$IMAGE_DIR"
+
+	elif [ -z "$(ls -al "$DIRNAME/$IMAGE_DIR" | egrep --invert-match '^(.*[ ]((\.)|(\.\.))$)|(total.*$)')" ]; then
+		rm -rvf "$DIRNAME/$IMAGE_DIR"/*			# clean out image directory
 	fi
 
 	[ -z $VERSION ] && TAG="" || TAG="--tag '$REPO/$NAME:$VERSION'";
@@ -182,6 +193,8 @@ main() {
 	docker save "$REPO/$NAME:latest" | gzip > "$DIRNAME/$IMAGE_DIR/$IMAGE_NAME.tar.gz"
 	ZIPPED_SIZE="$(ls -lh "$DIRNAME/$IMAGE_DIR/$IMAGE_NAME.tar.gz" | awk -F "[ ]+" '{print $5}')"
 	echo "[DOCKERIFY] SUCCESS: Compressed Docker image (${ZIPPED_SIZE}B) saved as $IMAGE_DIR/$IMAGE_NAME.tar.gz";
+	echo "$(sha256sum "$DIRNAME/$IMAGE_DIR/$IMAGE_NAME.tar.gz")" > "$DIRNAME/$IMAGE_DIR/sha256.checksum"
+	echo "[DOCKERIFY] sha256: $(cat "$DIRNAME/$IMAGE_DIR/sha256.checksum" | awk -F "[ ]+" '{print $1}')"
 
 	SCRIPT_STOPS="$(timestamp)"
 	echo "[DOCKERIFY] Total Execution Time: $(($SCRIPT_STOPS-$SCRIPT_STARTS)) seconds" && echo;
