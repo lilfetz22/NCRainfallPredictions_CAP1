@@ -209,8 +209,12 @@ keep_awake() {
 		return "$?"
 
 	elif [[ "$OSTYPE" == "darwin"* ]]; then		# Mac OSX
-		# caffeinate -i $1
-		$1
+		$1 &
+		pid=$!
+		caffeinate -i -w $pid
+		wait $pid
+		exit_status="$?"
+		[ $exit_status != 0 ] && exit $exit_status;
 		return 
 
 	# elif [[ "$OSTYPE" == "cygwin" ]]; then		# POSIX compatibility layer and linux env emulation for windows
