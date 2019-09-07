@@ -15,7 +15,7 @@ DIRNAME="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd )" && DIRNAME="${DIRNAME%/
 BUILD_DIR="build"
 IMAGE_DIR="bin"
 AUTHOR="lilfetz22"
-REPO="$AUTHOR"
+REPO=""
 NAME="rainfall"
 
 usage() {
@@ -40,7 +40,7 @@ help() {
     echo "";
 	echo "DEFAULT VARS:";
 	echo "  AUTHOR: $AUTHOR";
-	echo "  IMAGE_NAME: $REPO/$NAME:latest"
+	echo "  IMAGE_NAME: $NAME:latest"
 	echo "  BUILD_DIR: $(basename "$DIRNAME")/$BUILD_DIR";
 	echo "";
     # echo "ENVIRONMENT VARS:"
@@ -158,26 +158,25 @@ main() {
 		rm -rvf "$DIRNAME/$IMAGE_DIR"/*			# clean out image directory
 	fi
 
-	[ -z $VERSION ] && TAG="" || TAG="--tag '$REPO/$NAME:$VERSION'";
+	[ -z $VERSION ] && TAG="$REPO/$NAME:latest" || TAG="$REPO/$NAME:$VERSION";
+	TAG="$(echo "$TAG" | awk -F "/" '{if ($1 == "") print $2; else print $0}')"
 
-	IMAGE_NAME="${NAME}_$([ -z $VERSION ] && echo "latest" || echo "$VERSION")"
+	IMAGE_NAME="$(echo "$TAG" | awk -F "[/:]" 'BEGIN{OFS="_"} {print $2,$3}')"
 
 	echo "[DOCKERIFY] Creating Docker Container...";
 	# docker build [tag(s), output destination, PATH/directory of Dockerfile & context]
 	echo "[DOCKERIFY]" \
 			"docker build" \
-				--tag "$REPO/$NAME:latest" \
+				--tag "$TAG" \
 				--squash \
 				"$DIRNAME"
-				# $TAG \
 	
 	# actual command
 	DOCKER_BUILD_STARTS="$(timestamp)"
 	docker build \
-		--tag "$REPO/$NAME:latest" \
+		--tag "$TAG" \
 		--squash \
 		"$DIRNAME"
-		# $TAG \
 
 	# Handle Docker build status 
 	if [ "$?" != 0 ]; then
@@ -190,7 +189,7 @@ main() {
 	echo && echo "[DOCKERIFY] Docker Image ($IMAGE_SIZE) built in $(($DOCKER_BUILD_STOPS-$DOCKER_BUILD_STARTS)) seconds.";
 
 	echo "[DOCKERIFY] compressing image..."
-	docker save "$REPO/$NAME:latest" | gzip > "$DIRNAME/$IMAGE_DIR/$IMAGE_NAME.tar.gz"
+	docker save "$TAG" | gzip > "$DIRNAME/$IMAGE_DIR/$IMAGE_NAME.tar.gz"
 	ZIPPED_SIZE="$(ls -lh "$DIRNAME/$IMAGE_DIR/$IMAGE_NAME.tar.gz" | awk -F "[ ]+" '{print $5}')"
 	echo "[DOCKERIFY] SUCCESS: Compressed Docker image (${ZIPPED_SIZE}B) saved as $IMAGE_DIR/$IMAGE_NAME.tar.gz";
 	echo "$(sha256sum "$DIRNAME/$IMAGE_DIR/$IMAGE_NAME.tar.gz")" > "$DIRNAME/$IMAGE_DIR/sha256.checksum"
