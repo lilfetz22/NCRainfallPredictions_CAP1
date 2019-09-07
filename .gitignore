@@ -6,3 +6,4 @@ __pycache__/
 bin
 build
 dockerconfig/*.secret
+reports/api_key.py
