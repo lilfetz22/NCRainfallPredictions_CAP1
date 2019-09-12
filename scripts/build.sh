@@ -100,6 +100,11 @@ hit_error() {
 
 build() {
 	echo && echo "building...";
+
+	# PRE-BUILD, due to not latest file in SRC, link it instead
+	rm -f "$DIRNAME/src/Data_Wrangling_CAP1.ipynb"
+	ln -s "$DIRNAME/reports/Data_Wrangling_Report_CAP1.ipynb" "$DIRNAME/src/Data_Wrangling_CAP1.ipynb"
+
 	# does not handle (within src) or maintain (within build) directory structures
 	for filename in "$DIRNAME"/src/*.ipynb; do
 		# jupyter nbconvert --to script [YOUR_NOTEBOOK].ipynb
@@ -116,6 +121,10 @@ build() {
 			hit_error "ERROR: conversion of $(basename $filename) failed."
 		fi
 	done
+
+	## POST-BUILD, revert changes
+	git checkout -- "$DIRNAME/src/Data_Wrangling_CAP1.ipynb"
+
 	return $ERROR_COUNT
 }
 
