@@ -8,6 +8,7 @@ build
 dockerconfig/*.secret
 reports/api_key.py
 reports/nc_heatmap.html
+reports/data.js
 data/raw_data/shapefile/
 data/raw_data/shapefile1/tl_2013_37_place.dbf
 data/raw_data/shapefile1/
