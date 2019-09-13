@@ -1,7 +1,7 @@
 certifi==2019.6.16
 common==0.1.2
 Cython==0.29.13
-https://github.com/lilfetz22/gmplot/archive/master.zip  # gmplot
+https://github.com/lilfetz22/gmplot/archive/1.2.0-rainfall.zip  # gmplot
 ipywidgets==7.5.1
 joblib==0.13.2
 numpy==1.16.4
