@@ -14,9 +14,19 @@ spec:
       labels:
         app: rainfall-predictor
     spec:
+      securityContext:
+        runAsUser: 999
+        fsGroup: 1
       containers:
         - image: gcr.io/rainfall-estimation/rainfall:v1.0
           name: rainfalld
+          resources:
+            requests:
+              cpu: "3000m"
+              memory: "400M"
+            limits:
+              cpu: "3300m"
+              memory: "600M"
           volumeMounts:
             - name: rainfall-persistent-storage
               mountPath: /var/cache/rainfall-predictor
