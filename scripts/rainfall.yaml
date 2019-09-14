@@ -25,7 +25,7 @@ spec:
               cpu: "3000m"
               memory: "400M"
             limits:
-              cpu: "3300m"
+              cpu: "3200m"
               memory: "600M"
           volumeMounts:
             - name: rainfall-persistent-storage
