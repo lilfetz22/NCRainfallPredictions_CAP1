@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rainfall-predictor
+  labels:
+    app: rainfall-predictor
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: rainfall-predictor
+  template:
+    metadata:
+      labels:
+        app: rainfall-predictor
+    spec:
+      containers:
+        - image: gcr.io/rainfall-estimation/rainfall:v1.0
+          name: rainfalld
+          volumeMounts:
+            - name: rainfall-persistent-storage
+              mountPath: /var/cache/rainfall-predictor
+      volumes:
+        - name: rainfall-persistent-storage
+          persistentVolumeClaim:
+            claimName: rainfall-predictor-volclaim
+            readOnly: false
