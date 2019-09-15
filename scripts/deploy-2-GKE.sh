@@ -102,21 +102,64 @@ main() {
 	print_banner 1>&1;
 
 	# set gcloud configuration settings
-
+	gcloud config set project "rainfall-estimation"
+	gcloud config set compute/zone "us-central1-a"
+	
 	# Check if cluster exists and isn't running a current instance
+	CLUSTER=""
+	if [ -n "$(gcloud compute instances list | grep high-cpu-cluster)" ]; then
+		CLUSTER=true
+		if [ -n "$(kubectl get pods | grep "rainfall-predictor" )" ]; then
+			# there is a current deployment running
+		fi
+	fi
 
-	# Build cluster
+	if [ ! $CLUSTER ]; then
+		# Build cluster
+		gcloud beta container clusters create "high-cpu-cluster-1" \
+			--zone "us-central1-a" \
+			--cluster-version "1.13.7-gke.8" \
+			--num-nodes "1" \
+			--machine-type "n1-highcpu-4" \
+			--image-type "COS" \
+			--disk-type "pd-standard" \
+			--disk-size "20" \
+			--metadata disable-legacy-endpoints=true \
+			--scopes "https://www.googleapis.com/auth/devstorage.read_write",\
+					"https://www.googleapis.com/auth/logging.write",\
+					"https://www.googleapis.com/auth/monitoring",\
+					"https://www.googleapis.com/auth/servicecontrol",\
+					"https://www.googleapis.com/auth/service.management.readonly",\
+					"https://www.googleapis.com/auth/trace.append" \
+			--enable-cloud-logging \
+			--enable-cloud-monitoring \
+			--enable-ip-alias \
+			--network "projects/rainfall-estimation/global/networks/default" \
+			--subnetwork "projects/rainfall-estimation/regions/us-central1/subnetworks/default" \
+			--default-max-pods-per-node "110" \
+			--addons HorizontalPodAutoscaling \
+			--no-enable-basic-auth \
+			--no-enable-autoupgrade \
+			--enable-autorepair \
+			--resource-usage-bigquery-dataset "usage_metering_dataset" \
+			--enable-network-egress-metering \
+			--enable-resource-consumption-metering
+		
+		# Verify instance ready?
+		# $(gcloud compute instances list)
+	fi
 
-	# run release?  increment Version and push tag to git source control?
 
-	# tag image with $REPO = gcr.io/$IMAGE_NAME:$VERSION
+	# Add Persistent Storage to cluster
+	# kubectl apply -f "$DIRNAME/scripts/rainfall-volumeclaim.yaml"
+	# kubectl get pvc
+	# STORAGE_PARTITION_SUCCESS="$?"
 
-	# verify gcloud auth configure-docker has been run once for the very first time?
-	# docker push image to Google Container Registry
 
 	# run kubectl deployment command on new container image
-
-
+	# kubectl create -f "$DIRNAME/scripts/rainfall.yaml"
+	# kubectl get pod -l app=rainfall-predictor
+	# DEPLOYMENT_SUCCESS="$?"
 
 
 
