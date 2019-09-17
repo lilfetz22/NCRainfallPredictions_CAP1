@@ -19,7 +19,7 @@ REPO=""
 NAME="rainfall"
 
 usage() {
-	echo "Usage: ./$(basename "$0") [-q | --quiet] [--no-rebuild] [-v <#> | --version=<#>]" 1>&2;
+	echo "Usage: ./$(basename "$0") [-q | --quiet] [--no-rebuild] [--keep-version]" 1>&2;
 	echo "       ./$(basename "$0") [-h | --help]" 1>&2;
 	exit 1;
 }
@@ -35,8 +35,8 @@ help() {
     echo "Available Options: "
     echo "  -h | --help   Help"
 	echo "  -q | --quiet  Execute quietly except for errors"
-	echo "  -v <#> | --version=<#>  Tags docker image with specified version number"
 	echo "  --no-rebuild  Makes container with current ./build files, fails if empty"
+	echo "  --keep-version  Does not increment version number update field 1.1.X"
     echo "";
 	echo "DEFAULT VARS:";
 	echo "  AUTHOR: $AUTHOR";
@@ -79,23 +79,11 @@ process_args() {
 			-q|--quiet)
 				MODE_QUIET=true
 				;;
-			-v|--version)
-				if [ "$2" ]; then
-					VERSION="${2}"
-					shift
-				else
-					usage;
-				fi
-				;;
-			"--version"=?*)
-				OPTARG=${1#*=} 			# Delete everything up to "=" and keep the remainder.
-				TARGET_PAGE="${OPTARG}"
-				;;
-			"--version"=)						# Handle the case of an empty --path=
-				usage;
-				;;
 			--no-rebuild)
 				REBUILD=false
+				;;
+			--keep-version)
+				BUMP_VERSION=false
 				;;
 			--)			# End of all options.
 				shift
@@ -115,7 +103,7 @@ process_args() {
 	
 	## // IF-statements to fill all vars with defaults if not already filled // ##
 	[ -z "$REBUILD" ] && REBUILD=true
-	[ -z "$VERSION" ] && VERSION=""
+	[ -z "$BUMP_VERSION" ] && BUMP_VERSION=true
 	[ -z "$MODE_QUIET" ] && MODE_QUIET=false
 
 }
@@ -158,8 +146,19 @@ main() {
 		rm -rvf "$DIRNAME/$IMAGE_DIR"/*			# clean out image directory
 	fi
 
-	[ -z $VERSION ] && TAG="$REPO/$NAME:latest" || TAG="$REPO/$NAME:$VERSION";
-	TAG="$(echo "$TAG" | awk -F "/" '{if ($1 == "") print $2; else print $0}')"
+	if [ $BUMP_VERSION = true ]; then
+		"$DIRNAME/scripts/bump-version.py" "update" 
+		if [ "$?" != 0 ]; then
+			echo "[DOCKERIFY] Error occured. Aborting..." >&2 && echo && exit 1;
+		else
+			echo && sleep 2s		# Dramatic effect
+		fi
+	fi
+
+	# VERSION="v$(cat "$DIRNAME/VERSION")"
+	# [ -z $VERSION ] && TAG="$REPO/$NAME:latest" || TAG="$REPO/$NAME:$VERSION";
+	TAG="$REPO/$NAME:latest";
+	TAG="$(echo "$TAG" | awk -F "/" '{if ($1 == "") print $2; else print $0}')"  # remove slash if repo == ""
 
 	IMAGE_NAME="$(echo "$TAG" | awk -F "[/:]" 'BEGIN{OFS="_"} {print $2,$3}')"
 
