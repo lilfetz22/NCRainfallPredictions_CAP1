@@ -232,18 +232,18 @@
         "exogen": {
             "CHESNEE 7 WSW, SC": {
                 "data_source_sha1": "65fba7fe07dd23fc611699c5eae01a2c5c96bdb8",
-                "exmae": null
+                "exmae": 1.9664932880000001
             },
             "CHESNEE 7 WSW, SC,GAFFNEY 6 E, SC": {
                 "data_source_sha1": "45ed473b68f998a1b7f7b0c4b950b5caaa2c4324",
-                "exmae": null
+                "exmae": 1.910446604
             },
             "GAFFNEY 6 E, SC": {
                 "data_source_sha1": "850f46ecb6bef05fbda213107c7801d959ec278a",
-                "exmae": null
+                "exmae": 1.838256224
             }
         },
-        "keymae": null
+        "keymae": 1.9931330930000002
     },
     "CHARLOTTE AREA, NC": {
         "data_source_sha1": "8633b0bd43dfc8b740c5e279ccf2bf9f3a67f358",
@@ -416,34 +416,34 @@
         "exogen": {
             "CHESNEE 7 WSW, SC": {
                 "data_source_sha1": "65fba7fe07dd23fc611699c5eae01a2c5c96bdb8",
-                "exmae": null
+                "exmae": 1.934996905
             },
             "CHESNEE 7 WSW, SC,GAFFNEY 6 E, SC": {
                 "data_source_sha1": "45ed473b68f998a1b7f7b0c4b950b5caaa2c4324",
-                "exmae": null
+                "exmae": 1.88068435
             },
             "CHESNEE 7 WSW, SC,GAFFNEY 6 E, SC,SPARTANBURG 3 SSE, SC": {
                 "data_source_sha1": "df71497dff5c1defcb182ddd5fd94b438db0d550",
-                "exmae": null
+                "exmae": 1.928883175
             },
             "CHESNEE 7 WSW, SC,SPARTANBURG 3 SSE, SC": {
                 "data_source_sha1": "aecb24ac8edb30305d151c6ef22c95faf50b48f8",
-                "exmae": null
+                "exmae": 1.943536229
             },
             "GAFFNEY 6 E, SC": {
                 "data_source_sha1": "850f46ecb6bef05fbda213107c7801d959ec278a",
-                "exmae": null
+                "exmae": 1.754121679
             },
             "GAFFNEY 6 E, SC,SPARTANBURG 3 SSE, SC": {
                 "data_source_sha1": "4ac7eb63d6ecca10e1328e7415b957525a82eb62",
-                "exmae": null
+                "exmae": 1.8372171000000002
             },
             "SPARTANBURG 3 SSE, SC": {
                 "data_source_sha1": "4480f5ae3f3c8c2e7ba25081eaec0b1cfd6d0d36",
-                "exmae": null
+                "exmae": 1.913483019
             }
         },
-        "keymae": null
+        "keymae": 1.86483287
     },
     "FRANKLIN, NC": {
         "data_source_sha1": "3de0b6f4400a165f3c6beb97eb4f9bbb1c6d4f5d",
@@ -484,36 +484,36 @@
         "exogen": {
             "FORT MILL 4 NW, SC": {
                 "data_source_sha1": "42e692135d97e0bbd63499a34bf5b34eaf0ca38e",
-                "exmae": null
+                "exmae": 1.656174077
             },
             "FORT MILL 4 NW, SC,GAFFNEY 6 E, SC": {
                 "data_source_sha1": "e34c3c4469355ddc017e19118aec4df49169629e",
-                "exmae": null
+                "exmae": 1.605085075
             },
             "GAFFNEY 6 E, SC": {
                 "data_source_sha1": "850f46ecb6bef05fbda213107c7801d959ec278a",
-                "exmae": null
+                "exmae": 1.6099578509999999
             }
         },
-        "keymae": null
+        "keymae": 1.612306154
     },
     "GRANDFATHER MTN, NC": {
         "data_source_sha1": "b527f058528d2df0db12e64c9ce6b8871b393a89",
         "exogen": {
             "ELIZABETHTON, TN": {
                 "data_source_sha1": "5873d53d75c1addd503e6bc4797f6304c6bba813",
-                "exmae": null
+                "exmae": 2.544987837
             },
             "ELIZABETHTON, TN,ROAN MOUNTAIN 3SW, TN": {
                 "data_source_sha1": "2f49a7b01af91b023e73d938e5aaaa15b78741c1",
-                "exmae": null
+                "exmae": 2.797569592
             },
             "ROAN MOUNTAIN 3SW, TN": {
                 "data_source_sha1": "74515a0df40e417d19305924953cc4767b218aaa",
-                "exmae": null
+                "exmae": 2.799639392
             }
         },
-        "keymae": null
+        "keymae": 2.583667713
     },
     "HENDERSON 2 NNW, NC": {
         "data_source_sha1": "a65c35a5851406ec7df39e8b07a3cd6c1ea8cf14",
@@ -648,18 +648,18 @@
         "exogen": {
             "CHESNEE 7 WSW, SC": {
                 "data_source_sha1": "65fba7fe07dd23fc611699c5eae01a2c5c96bdb8",
-                "exmae": null
+                "exmae": 2.2112699019999997
             },
             "CHESNEE 7 WSW, SC,CLEVELAND 3S, SC": {
                 "data_source_sha1": "9000535cfe364507a2ec537cdbfaab5840b40cd5",
-                "exmae": null
+                "exmae": 2.406073856
             },
             "CLEVELAND 3S, SC": {
                 "data_source_sha1": "ec63d033b5549b3311a2711ad5aa92b4f5105e8d",
-                "exmae": null
+                "exmae": 2.4761945830000003
             }
         },
-        "keymae": null
+        "keymae": 2.24065399
     },
     "LAKE TOXAWAY 2 SW, NC": {
         "data_source_sha1": "92de2b4a759cd9ccc46f3ce4913ea3e2ad5ab23e",
@@ -842,10 +842,10 @@
         "exogen": {
             "FORT MILL 4 NW, SC": {
                 "data_source_sha1": "42e692135d97e0bbd63499a34bf5b34eaf0ca38e",
-                "exmae": null
+                "exmae": 1.7189464669999999
             }
         },
-        "keymae": null
+        "keymae": 1.6347849319999999
     },
     "MOUNT MITCHELL AREA, NC": {
         "data_source_sha1": "8ee52dd7f34807429dd4ad3b7687fb592ee5c457",
@@ -1282,9 +1282,9 @@
         "exogen": {
             "LORIS 2 S, SC": {
                 "data_source_sha1": "c2009965d85027e8f22e97eff74873d5cf88b017",
-                "exmae": null
+                "exmae": 2.153186109
             }
         },
-        "keymae": null
+        "keymae": 2.165116952
     }
 }
