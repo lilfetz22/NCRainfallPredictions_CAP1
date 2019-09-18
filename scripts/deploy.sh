@@ -60,10 +60,12 @@ process_args() {
 deploy() {
 
 	# Bump version
-	# "$DIRNAME/scripts/bump-version.py"
+	"$DIRNAME/scripts/bump-version.py" "minor"
 	VERSION="v$(cat "$DIRNAME/VERSION")"
-	# if bumped, need to run dockerify to make sure VERSION file is inside of image
-	# run release?  increment Version and push tag to git source control?
+	# Due to version bump, run dockerify to update image with VERSION file
+	"$DIRNAME/scripts/dockerify.sh" --quiet --no-rebuild --keep-version 
+	# Create Release tag in git
+	# if branch == master?
 	# git add VERSION
 	# git commit -m "Version: $VERSION"
 	# git tag -a "$VERSION" -m "Version: $VERSION"
