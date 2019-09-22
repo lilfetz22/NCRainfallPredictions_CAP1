@@ -136,9 +136,11 @@ create_cluster() {
 }
 
 request_storage() {
+	# NOTE: if storage already exists, kubernetes will handle by recognizing it already exists
 
 	echo "Creating persistent storage volumes..."
 	VCLAIMS=( "$DIRNAME/scripts/"*volumeclaim.yaml )
+
 	for volumeclaim in $VCLAIMS; do
 		$VERBOSE && echo "EXEC: kubectl apply -f ${volumeclaim}" 
 		kubectl apply -f "$volumeclaim"
@@ -210,7 +212,8 @@ main() {
 
 		CLUSTER_NAME_NEW="$(increment_cluster_name $CLUSTER_NAME)"
 
-		RESOLUTION=false
+		RESOLUTION=true
+		## STILL Broken
 		while [ $RESOLUTION = false ]; do 
 			echo >&2 "Do you want to create a new cluster with"
 			echo >&2 -n "the name '$CLUSTER_NAME_NEW' [Y/N]: "
@@ -251,4 +254,3 @@ process_args "$@";
 check_prereqs || exit 1;
 
 main                    # Run Main Loop
-exit 0;

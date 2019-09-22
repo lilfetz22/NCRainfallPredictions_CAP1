@@ -72,7 +72,7 @@ process_args() {
 
 deploy() {
 
-	START_TIME=$(timestamp)
+	DEPLOYMENT_START_TIME=$(timestamp)
 	# Bump version
 	"$DIRNAME/scripts/bump-version.py" "minor"
 	VERSION="v$(cat "$DIRNAME/VERSION")"
@@ -118,11 +118,12 @@ deploy() {
 	. "$SCRIPT_FILE" "$@"
 	[ "$?" != 0 ] && exit 1
 
-	END_TIME=$(timestamp)
-	DURATION=$((END_TIME-START_TIME))
+	DEPLOYMENT_END_TIME=$(timestamp)
+	DURATION=$(( DEPLOYMENT_END_TIME - DEPLOYMENT_START_TIME ))
 	MINUTES=$((DURATION / 60))
 	SECONDS=$((DURATION % 60))
-	echo && "[DEPLOY] App Deployment completed in ${MINUTES}min, ${SECONDS}s." && echo
+	echo && echo "[DEPLOY] App Deployment completed in ${MINUTES}min, ${SECONDS}s." && echo
+	exit 0;
 }
 
 keep_awake() {

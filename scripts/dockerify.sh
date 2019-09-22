@@ -156,11 +156,10 @@ main() {
 	fi
 
 	# VERSION="v$(cat "$DIRNAME/VERSION")"
-	# [ -z $VERSION ] && TAG="$REPO/$NAME:latest" || TAG="$REPO/$NAME:$VERSION";
-	TAG="$REPO/$NAME:latest";
-	TAG="$(echo "$TAG" | awk -F "/" '{if ($1 == "") print $2; else print $0}')"  # remove slash if repo == ""
+	# [ -z $VERSION ] && TAG="$NAME:latest" || TAG="$NAME:$VERSION";
+	TAG="$NAME:latest";
 
-	IMAGE_NAME="$(echo "$TAG" | awk -F "[/:]" 'BEGIN{OFS="_"} {print $2,$3}')"
+	IMAGE_NAME="$(echo "$TAG" | awk -F "[:]" 'BEGIN{OFS="_"} {print $1,$2}')"
 
 	echo "[DOCKERIFY] Creating Docker Container...";
 	# docker build [tag(s), output destination, PATH/directory of Dockerfile & context]

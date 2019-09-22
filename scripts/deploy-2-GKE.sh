@@ -97,8 +97,6 @@ prepare_yaml() {
 
 	template="${1}"			# ARG #1 : filename of template yaml
 	finalYAML=$(mktemp)		# make temporary file
-	echo "temp-yamlcomplete: $finalYAML"
-	# trap 'rm "$finalYAML"' ERR EXIT
 
 	generated_stdin_cmds="$(echo "cat <<EOF >\"$finalYAML\""; cat $template; echo EOF;)"
 	source /dev/stdin <<<"$generated_stdin_cmds"
@@ -110,7 +108,7 @@ deploy() {
 
 	DEPLOYMENT_FILE="$(prepare_yaml "$DIRNAME/scripts/$NAME.yaml")"
 	# DEPLOYMENT_FILE="$(prepare_yaml "$DIRNAME/scripts/$NAME.tpl.yaml")"
-	trap 'rm "$DEPLOYMENT_FILE"' ERR
+	trap 'rm "$DEPLOYMENT_FILE"' ERR EXIT SIGTERM
 
 	# run kubectl deployment command on new container image
 	kubectl create -f "$DEPLOYMENT_FILE"
@@ -174,4 +172,3 @@ process_args "$@";
 check_prereqs || exit 1;
 
 main                    # Run Main Loop
-exit 0;
