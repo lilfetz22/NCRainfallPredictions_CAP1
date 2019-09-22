@@ -49,7 +49,7 @@ print_banner() {
 check_prereqs() {
 	missing_prereqs=0
 	command -v gcloud >/dev/null 2>&1 || { ((missing_prereqs++)); echo >&2 "MISSING PREREQ: gcloud is not installed but is required."; }
-	# command -v docker >/dev/null 2>&1 || { ((missing_prereqs++)); echo >&2 "MISSING PREREQ: docker is not installed but is required."; }
+	command -v kubectl >/dev/null 2>&1 || { ((missing_prereqs++)); echo >&2 "MISSING PREREQ: kubectl is not installed but is required."; }
 	# List additional prereqs here
 	return "$missing_prereqs"
 }
@@ -92,105 +92,78 @@ process_args() {
 	[ -z "$MODE_QUIET" ] && MODE_QUIET=false
 }
 
+prepare_yaml() {
+	[ -z "$1" ] && echo "ERROR: template.yaml filename must be provided." && exit 1
+
+	template="${1}"			# ARG #1 : filename of template yaml
+	finalYAML=$(mktemp)		# make temporary file
+	echo "temp-yamlcomplete: $finalYAML"
+	# trap 'rm "$finalYAML"' ERR EXIT
+
+	generated_stdin_cmds="$(echo "cat <<EOF >\"$finalYAML\""; cat $template; echo EOF;)"
+	source /dev/stdin <<<"$generated_stdin_cmds"
+	echo "$finalYAML";		# return filepath of filled-in file
+	return 0
+}
+
 deploy() {
 
+	DEPLOYMENT_FILE="$(prepare_yaml "$DIRNAME/scripts/$NAME.yaml")"
+	# DEPLOYMENT_FILE="$(prepare_yaml "$DIRNAME/scripts/$NAME.tpl.yaml")"
+	trap 'rm "$DEPLOYMENT_FILE"' ERR
+
+	# run kubectl deployment command on new container image
+	kubectl create -f "$DEPLOYMENT_FILE"
+	DEPLOYMENT_SUCCESS="$?"
+	if [ "$DEPLOYMENT_SUCCESS" != 0 ]; then
+		echo >&2 "Error during kubectl create. Exiting...";
+		exit $DEPLOYMENT_SUCCESS;
+	else
+		echo "App deployment initiated..."
+		ALL_RUNNING=false
+		COUNTER=0
+		kube_CMD="kubectl get pod -l app=$NAME-predictor"
+		while [ $ALL_RUNNING = false ]; do
+			sleep 2s
+			COUNTER=$((COUNTER+2))
+			if [ $((COUNTER % 10)) == 0 ]; then
+				## kube get pods | awkfilter_getstatus | awkfilter_getnotrunning as an array
+				POD_STATUS=(\
+							$($kube_CMD \
+							  | awk -F "[ ][ ]+" 'NR>=2 {print $3}' \
+							  | awk 'toupper($0) !~ /^RUNNING$/ { print }'\
+						     )\
+						   )
+				if [ ${#POD_STATUS[@]} == 0 ]; then
+					ALL_RUNNING=true
+					echo && echo "Verified all pods are running."
+					break
+				fi
+			fi
+			[ $((COUNTER % 6)) == 0 ] && echo "." || echo -n "."
+			[ $COUNTER -gt 180 ] && echo && echo "Start time exceeded 3 minutes. Please check for errors. Exiting..." && exit 3
+		done
+		return 0;
+	fi
 }
 
 ## Main Loop ##
 main() {
 	$MODE_QUIET && 1>/dev/null;
-	print_banner 1>&1;
+	# if [ ""  ]; then
+		print_banner 1>&1;
+	# fi
 
 	# set gcloud configuration settings
 	gcloud config set project "rainfall-estimation"
 	gcloud config set compute/zone "us-central1-a"
 	
-	# Check if cluster exists and isn't running a current instance
-	CLUSTER=""
-	if [ -n "$(gcloud compute instances list | grep high-cpu-cluster)" ]; then
-		CLUSTER=true
-		if [ -n "$(kubectl get pods | grep "rainfall-predictor" )" ]; then
-			# there is a current deployment running
-		fi
-	fi
+	## Create Cluster (if necessary)
+	. "$DIRNAME/scripts/GKE-cluster-create.sh" "high-cpu-cluster-1" 
+	[ "$?" != 0 ] && exit 1
 
-	if [ ! $CLUSTER ]; then
-		# Build cluster
-		gcloud beta container clusters create "high-cpu-cluster-1" \
-			--zone "us-central1-a" \
-			--cluster-version "1.13.7-gke.8" \
-			--num-nodes "1" \
-			--machine-type "n1-highcpu-4" \
-			--image-type "COS" \
-			--disk-type "pd-standard" \
-			--disk-size "20" \
-			--metadata disable-legacy-endpoints=true \
-			--scopes "https://www.googleapis.com/auth/devstorage.read_write",\
-					"https://www.googleapis.com/auth/logging.write",\
-					"https://www.googleapis.com/auth/monitoring",\
-					"https://www.googleapis.com/auth/servicecontrol",\
-					"https://www.googleapis.com/auth/service.management.readonly",\
-					"https://www.googleapis.com/auth/trace.append" \
-			--enable-cloud-logging \
-			--enable-cloud-monitoring \
-			--enable-ip-alias \
-			--network "projects/rainfall-estimation/global/networks/default" \
-			--subnetwork "projects/rainfall-estimation/regions/us-central1/subnetworks/default" \
-			--default-max-pods-per-node "110" \
-			--addons HorizontalPodAutoscaling \
-			--no-enable-basic-auth \
-			--no-enable-autoupgrade \
-			--enable-autorepair \
-			--resource-usage-bigquery-dataset "usage_metering_dataset" \
-			--enable-network-egress-metering \
-			--enable-resource-consumption-metering
-		
-		# Verify instance ready?
-		# $(gcloud compute instances list)
-	fi
-
-
-	# Add Persistent Storage to cluster
-	# kubectl apply -f "$DIRNAME/scripts/rainfall-volumeclaim.yaml"
-	# kubectl get pvc
-	# STORAGE_PARTITION_SUCCESS="$?"
-
-
-	# run kubectl deployment command on new container image
-	# kubectl create -f "$DIRNAME/scripts/rainfall.yaml"
-	# kubectl get pod -l app=rainfall-predictor
-	# DEPLOYMENT_SUCCESS="$?"
-
-
-
-
-	# if [ ! -d "$DIRNAME/$BUILD_DIR" ]; then
-	# 	if [ $VERBOSE ]; then
-	# 		echo "Creating Directories: "
-	# 		echo -n "  " && echo "$DIRNAME/$BUILD_DIR"	# macosx mkdir -p -v [path] fails, is official bug
-	# 	fi
-	# 	mkdir -p "$DIRNAME/$BUILD_DIR"
-
-	# elif [ -n "$(ls -al "$DIRNAME/$BUILD_DIR" | egrep --invert-match '^(.*[ ]((\.)|(\.\.))$)|(total.*$)')" ]; then
-	# 	## CLEAN PREVIOUS TEST BUILD
-	# 	echo "cleaning...";
-	# 	if [ $VERBOSE == true ]; then
-	# 		rm -vfR "$DIRNAME/$BUILD_DIR"/*
-	# 	else
-	# 		rm -fR "$DIRNAME/$BUILD_DIR"/*
-	# 	fi
-	# 	echo "clean complete.";
-	# fi
-	
-	# ## BUILD
-	# build 1>&1;
-
-	# if [[ $ERROR_COUNT > 0 ]]; then
-	# 	echo "Python App build completed but with $ERROR_COUNT error(s)." && echo;
-	# 	exit 1;
-	# else 
-	# 	echo "Python App build complete." && echo;
-	# fi
+	deploy
+	echo "App deployment to GKE complete." && echo;
 }
 
 # ---------------------------

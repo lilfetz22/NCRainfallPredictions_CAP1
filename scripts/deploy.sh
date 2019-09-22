@@ -34,6 +34,19 @@ help() {
     exit 0;
 }
 
+check_prereqs() {
+	missing_prereqs=0
+	command -v docker >/dev/null 2>&1 || { ((missing_prereqs++)); echo >&2 "MISSING PREREQ: docker is not installed but is required."; }
+	command -v git >/dev/null 2>&1 || { ((missing_prereqs++)); echo >&2 "MISSING PREREQ: git is not installed but is required."; }
+	# List additional prereqs here
+	return "$missing_prereqs"
+}
+
+# timestamp function in ms
+timestamp() {
+  date +"%s"
+}
+
 # Process line arguments
 process_args() {
 	case "$1" in		   # process & check 1st command line arg
@@ -59,10 +72,12 @@ process_args() {
 
 deploy() {
 
+	START_TIME=$(timestamp)
 	# Bump version
 	"$DIRNAME/scripts/bump-version.py" "minor"
 	VERSION="v$(cat "$DIRNAME/VERSION")"
 	# Due to version bump, run dockerify to update image with VERSION file
+	echo "[DEPLOY] Verifying Docker container..."
 	"$DIRNAME/scripts/dockerify.sh" --quiet --no-rebuild --keep-version 
 	# Create Release tag in git
 	# if branch == master?
@@ -75,30 +90,39 @@ deploy() {
 	# tag image with $REPO = gcr.io/$IMAGE_NAME:$VERSION
 	# Tag docker file with new version, run dockerify if necessary
 	docker tag "$NAME:latest" "$REPO/$PROJECT_ID/$NAME:$VERSION"
+	echo "[DEPLOY] Tagged latest version of project with version number"
+	echo "[DEPLOY] $REPO/$PROJECT_ID/$NAME:$VERSION"
 
-
-	# verify gcloud auth configure-docker has been run once for the very first time?
-	# docker push image to Google Container Registry
-
-	# Upload docker image to container registry ($REPO)
-	# temp_file=$(mktemp)
-	# exec 3 < "$temp_file"
-	# trap 'rm "$temp_file"' SIGTERM SIGERR
-	docker push "$REPO/$PROJECT_ID/$NAME:$VERSION" 2>&1 1>&3 &
-	# pid_upload=$!
-	# wait $pid_upload
-	# exit_status="$?"
-	# output=$(cat <&3)
-	# if [ $exit_status != 0 ]; then
-		# echo "$output"
-		# if [ -n "$(echo "$output" | grep 'unauthorized')" ]; then
-		#	echo "POSSIBLE FIX: run \`$> gcloud auth configure-docker\`" 
-		# fi
-	# 	exit $exit_status;
-	# fi
+	if [ "$REPO" == "gcr.io" ]; then
+		# Upload docker image to Google Container Registry ($REPO)
+		temp_file=$(mktemp)
+		exec 3<"$temp_file"
+		trap 'rm "$temp_file"' ERR EXIT
+		docker push "$REPO/$PROJECT_ID/$NAME:$VERSION" 2>&1 1>&3 &
+		pid_upload=$!
+		wait $pid_upload
+		exit_status="$?"
+		output=$(cat <&3)
+		if [ $exit_status != 0 ]; then
+			echo "$output"
+			if [ -n "$(echo "$output" | grep 'unauthorized')" ]; then
+				echo "POSSIBLE FIX: run \`$> gcloud auth configure-docker\`" 
+			fi
+			exit $exit_status;
+		fi
+	else
+		echo "Repository ($REPO) not supported.  Aborting..." && exit 2;
+	fi
 
 	# Run deployment operations
 	. "$SCRIPT_FILE" "$@"
+	[ "$?" != 0 ] && exit 1
+
+	END_TIME=$(timestamp)
+	DURATION=$((END_TIME-START_TIME))
+	MINUTES=$((DURATION / 60))
+	SECONDS=$((DURATION % 60))
+	echo && "[DEPLOY] App Deployment completed in ${MINUTES}min, ${SECONDS}s." && echo
 }
 
 keep_awake() {
@@ -135,6 +159,8 @@ keep_awake() {
 # CODE START - Ingest line args
 # ---------------------------
 process_args "$@";
+
+check_prereqs || exit 1;
 
 keep_awake deploy
 exit 0;

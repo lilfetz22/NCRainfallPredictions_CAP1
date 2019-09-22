@@ -18,7 +18,7 @@ spec:
         runAsUser: 999
         fsGroup: 1
       containers:
-        - image: gcr.io/rainfall-estimation/rainfall:v1.0
+        - image: "${REPO}/${PROJECT_ID}/${NAME}:${VERSION}"
           name: rainfalld
           resources:
             requests:
