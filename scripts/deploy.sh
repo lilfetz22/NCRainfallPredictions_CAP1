@@ -14,7 +14,7 @@
 
 DIRNAME="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd )" && DIRNAME="${DIRNAME%/scripts}";
 SCRIPT_FILE=""
-NAME="rainfall"
+NAME="rainfall-predictor"
 PROJECT_ID="rainfall-estimation"
 
 usage() {
@@ -54,7 +54,7 @@ process_args() {
 			help
 			;;
 		GKE)
-			SCRIPT_FILE="$DIRNAME/scripts/deploy-2-GKE.sh"
+			SCRIPT_FILE="$DIRNAME/scripts/.GKE-deployment.sh"
 			REPO="gcr.io"
 			;;
 		--)			# End of all options.

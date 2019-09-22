@@ -1,15 +1,15 @@
 #!/bin/bash
 #
-# FILE: deploy-2-GKE.sh
+# FILE: GKE-deployment.sh
 #=========================================
 # Deploys App Container to Google Kubernetes Environment
 # Docker Container located in /bin
 #
 # Usage:
-#	$> ./deploy-2-GKE.sh [options]
+#	$> ./GKE-deployment.sh [options]
 # 
 # For Options, see help
-#   $> ./deploy-2-GKE.sh --help
+#   $> ./GKE-deployment.sh --help
 #=========================================
 
 # DEFAULT VARS (accepts environment variables)
@@ -106,8 +106,7 @@ prepare_yaml() {
 
 deploy() {
 
-	DEPLOYMENT_FILE="$(prepare_yaml "$DIRNAME/scripts/$NAME.yaml")"
-	# DEPLOYMENT_FILE="$(prepare_yaml "$DIRNAME/scripts/$NAME.tpl.yaml")"
+	DEPLOYMENT_FILE="$(prepare_yaml "$DIRNAME/scripts/$NAME.tpl.yaml")"
 	trap 'rm "$DEPLOYMENT_FILE"' ERR EXIT SIGTERM
 
 	# run kubectl deployment command on new container image
@@ -120,7 +119,7 @@ deploy() {
 		echo "App deployment initiated..."
 		ALL_RUNNING=false
 		COUNTER=0
-		kube_CMD="kubectl get pod -l app=$NAME-predictor"
+		kube_CMD="kubectl get pod -l app=$NAME"
 		while [ $ALL_RUNNING = false ]; do
 			sleep 2s
 			COUNTER=$((COUNTER+2))
@@ -157,7 +156,7 @@ main() {
 	gcloud config set compute/zone "us-central1-a"
 	
 	## Create Cluster (if necessary)
-	. "$DIRNAME/scripts/GKE-cluster-create.sh" "high-cpu-cluster-1" 
+	. "$DIRNAME/scripts/.GKE-cluster-create.sh" "high-cpu-cluster-1" 
 	[ "$?" != 0 ] && exit 1
 
 	deploy

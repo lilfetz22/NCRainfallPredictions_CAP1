@@ -16,7 +16,7 @@ BUILD_DIR="build"
 IMAGE_DIR="bin"
 AUTHOR="lilfetz22"
 REPO=""
-NAME="rainfall"
+[ -z "$NAME" ] && NAME="rainfall-predictor"
 
 usage() {
 	echo "Usage: ./$(basename "$0") [-q | --quiet] [--no-rebuild] [--keep-version]" 1>&2;

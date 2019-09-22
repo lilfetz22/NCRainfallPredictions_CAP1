@@ -1,15 +1,15 @@
 #!/bin/bash
 #
-# FILE: GKE-cluster-create.sh
+# FILE: .GKE-cluster-create.sh
 #=========================================
 # Creates cluster on Google Cloud running Kubernetes
 # has specific CPU count and RAM allocation type
 #
 # Usage:
-#	$> ./GKE-cluster-create.sh [options]
+#	$> ./.GKE-cluster-create.sh [options]
 # 
 # For Options, see help
-#   $> ./GKE-cluster-create.sh --help
+#   $> ./.GKE-cluster-create.sh --help
 #=========================================
 
 # DEFAULT VARS (accepts environment variables)
