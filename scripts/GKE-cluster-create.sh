@@ -152,6 +152,29 @@ request_storage() {
 	done
 	
 	if [ ${#VCLAIMS[@]} > 0 ]; then
+		echo "Waiting for storage volumes to be bound to Compute Engine..."
+		# Create Loop to detect when storage volumes become bound
+		ALL_BOUND=false
+		COUNTER=0
+		while [ $ALL_BOUND = false ]; do
+			sleep 2s
+			COUNTER=$((COUNTER+2))
+			if [ $((COUNTER % 10)) == 0 ]; then
+				VOLUME_STATUS=(\
+							   $(kubectl get pvc \
+							     | awk -F "[ ][ ]+" 'NR>=2 {print $2}' \
+								 | awk 'toupper($0) !~ /^BOUND$/ { print }'\
+								)\
+							  )
+				if [ ${#VOLUME_STATUS[@]} == 0 ]; then
+					ALL_BOUND=true && echo;
+					break
+				fi
+			fi
+			[ $((COUNTER % 6)) == 0 ] && echo "." || echo -n "."
+			[ $COUNTER -gt 180 ] && echo && echo "Storage binding time exceeded 3 minutes. Please check for errors. Exiting..." && exit 3
+		done
+
 		echo "Completed ${#VCLAIMS[@]} persistent storage volume creation."
 		echo "Persistent Storage Volumes: "
 		kubectl get pvc; echo;
