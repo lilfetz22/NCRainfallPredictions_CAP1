@@ -102,8 +102,6 @@ build() {
 	echo && echo "building...";
 
 	# PRE-BUILD, due to not latest file in SRC, link it instead
-	rm -f "$DIRNAME/src/Data_Wrangling_CAP1.ipynb"
-	ln -s "$DIRNAME/reports/Data_Wrangling_Report_CAP1.ipynb" "$DIRNAME/src/Data_Wrangling_CAP1.ipynb"
 	ln -s "$DIRNAME/reports/Data_Story.ipynb" "$DIRNAME/src/Data_Story.ipynb"
 
 	# does not handle (within src) or maintain (within build) directory structures
@@ -124,7 +122,6 @@ build() {
 	done
 
 	## POST-BUILD, revert changes
-	git checkout -- "$DIRNAME/src/Data_Wrangling_CAP1.ipynb"
 	rm "$DIRNAME/src/Data_Story.ipynb"
 
 	return $ERROR_COUNT
