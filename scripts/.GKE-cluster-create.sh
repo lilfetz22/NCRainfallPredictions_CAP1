@@ -112,11 +112,11 @@ create_cluster() {
 		--disk-size "20" \
 		--metadata disable-legacy-endpoints=true \
 		--scopes "https://www.googleapis.com/auth/devstorage.read_write","https://www.googleapis.com/auth/logging.write","https://www.googleapis.com/auth/monitoring","https://www.googleapis.com/auth/servicecontrol","https://www.googleapis.com/auth/service.management.readonly","https://www.googleapis.com/auth/trace.append" \
-		--enable-cloud-logging \
-		--enable-cloud-monitoring \
+		--enable-stackdriver-kubernetes \
 		--enable-ip-alias \
 		--network "projects/rainfall-estimation/global/networks/default" \
 		--subnetwork "projects/rainfall-estimation/regions/us-central1/subnetworks/default" \
+		--no-issue-client-certificate \
 		--default-max-pods-per-node "110" \
 		--addons HorizontalPodAutoscaling \
 		--no-enable-basic-auth \
