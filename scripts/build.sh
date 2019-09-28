@@ -121,6 +121,16 @@ build() {
 		fi
 	done
 
+	for filename in "$DIRNAME"/src/*.py; do
+		cp "$filename" "$DIRNAME/$BUILD_DIR/"
+		COPY_SUCCESS="$?"
+		if [ $COPY_SUCCESS == 0 ] && [ $VERBOSE == true ]; then
+			echo "BUILD: added $file." && echo;
+		elif [ $COPY_SUCCESS != 0 ]; then
+			hit_error "ERROR: copy of $(basename $filename) failed."
+		fi
+	done
+
 	## POST-BUILD, revert changes
 	rm "$DIRNAME/src/Data_Story.ipynb"
 
