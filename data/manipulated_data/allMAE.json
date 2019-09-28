@@ -7,7 +7,7 @@
                 "exmae": null
             }
         },
-        "keymae": null
+        "keymae": 1.5479680814163455
     },
     "ASHEVILLE AIRPORT, NC": {
         "data_source_sha1": "6b38ce41d8945ab24a571779666981fadd0f506c",
@@ -836,6 +836,24 @@
             }
         },
         "keymae": null
+    },
+    "MARSHALL, NC": {
+        "data_source_sha1": "f048b4dcb380dc43ddd544561fbf2d1ef6f628a3",
+        "exogen": {
+            "ERWIN 1 W, TN": {
+                "data_source_sha1": "a42f839d575f4b5f595ad09ddd05739c73a9a8a2",
+                "exmae": 1.639991509035022
+            },
+            "ERWIN 1 W, TN,GREENEVILLE EXP STA, TN,NEWPORT 1 NW, TN": {
+                "data_source_sha1": "332b8b7b59197daa813daec7ba9001c351013805",
+                "exmae": 1.6435891103593887
+            },
+            "GREENEVILLE EXP STA, TN": {
+                "data_source_sha1": "ade192904f5758a2ef5750afe89f81612fdc007f",
+                "exmae": 1.4447718434140582
+            }
+        },
+        "keymae": 1.4291167444541135
     },
     "MOUNT HOLLY 4 NE, NC": {
         "data_source_sha1": "6c17da95287cedaa3a80a7292223fbe5d06c5e17",
