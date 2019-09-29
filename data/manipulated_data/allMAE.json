@@ -127,6 +127,10 @@
         },
         "keymae": null
     },
+    "BOONE 1 SE, NC": {
+        "data_source_sha1": "456a6d329d0a4ce9d6e6273930d080669e4a7adb",
+        "keymae": 2.4809657084670653
+    },
     "BREVARD, NC": {
         "data_source_sha1": "f0a1d74e50575c020d87f71c592684f05281f301",
         "exogen": {
@@ -410,6 +414,14 @@
             }
         },
         "keymae": null
+    },
+    "DANBURY, NC": {
+        "data_source_sha1": "fd928e7f61584d5e414fc659d245be41eb66c40a",
+        "keymae": 1.5765827847357705
+    },
+    "EDEN, NC": {
+        "data_source_sha1": "739f395ac20ca869c286410cc08e49f457fa266c",
+        "keymae": 1.5210608625653732
     },
     "FOREST CITY 8 W, NC": {
         "data_source_sha1": "3bdb36c3ab8f4b01fafb4ddc39ae428c34710445",
@@ -870,6 +882,10 @@
             }
         },
         "keymae": 1.4291167444541135
+    },
+    "MONROE 2 SE, NC": {
+        "data_source_sha1": "981e22dc3b35bff0fd4a00b7ba33347ac3ad67cd",
+        "keymae": 1.7980278853798453
     },
     "MOUNT HOLLY 4 NE, NC": {
         "data_source_sha1": "6c17da95287cedaa3a80a7292223fbe5d06c5e17",
