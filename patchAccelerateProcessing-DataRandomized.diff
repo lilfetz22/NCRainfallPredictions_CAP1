@@ -1,8 +1,8 @@
 diff --git a/src/Exogenous_Variables.ipynb b/src/Exogenous_Variables.ipynb
-index 9b353ab..b9767a3 100644
+index 2841f1d..d48b946 100644
 --- a/src/Exogenous_Variables.ipynb
 +++ b/src/Exogenous_Variables.ipynb
-@@ -150,15 +150,21 @@
+@@ -152,15 +152,21 @@
      "        \n",
      "    return(list_one_step)\n",
      "\n",
