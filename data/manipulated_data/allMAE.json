@@ -527,6 +527,10 @@
         },
         "keymae": 2.583667713
     },
+    "HAYESVILLE 1 NE, NC": {
+        "data_source_sha1": "70015810f6858296d5306451aa47537796832f77",
+        "keymae": 1.6711909172121096
+    },
     "HENDERSON 2 NNW, NC": {
         "data_source_sha1": "a65c35a5851406ec7df39e8b07a3cd6c1ea8cf14",
         "exogen": {
@@ -654,6 +658,10 @@
             }
         },
         "keymae": null
+    },
+    "KING, NC": {
+        "data_source_sha1": "dc09eae9783f9dd570126cf93151fe13ef28e146",
+        "keymae": 1.5797669943305384
     },
     "LAKE LURE 2, NC": {
         "data_source_sha1": "75edafd2137809975b6660efa45848a34405390a",
@@ -887,6 +895,10 @@
         "data_source_sha1": "981e22dc3b35bff0fd4a00b7ba33347ac3ad67cd",
         "keymae": 1.7980278853798453
     },
+    "MOUNT AIRY 2 W, NC": {
+        "data_source_sha1": "6371c7232e3a7a9d4b04a5f039960a53fc2a2886",
+        "keymae": 2.099951002610403
+    },
     "MOUNT HOLLY 4 NE, NC": {
         "data_source_sha1": "6c17da95287cedaa3a80a7292223fbe5d06c5e17",
         "exogen": {
@@ -916,6 +928,10 @@
             }
         },
         "keymae": null
+    },
+    "MURPHY 4ESE, NC": {
+        "data_source_sha1": "0e56ec36ce9c7f6dadca29f52b8fa76f04d4bf49",
+        "keymae": 1.6877677367159716
     },
     "OCONALUFTEE, NC": {
         "data_source_sha1": "128bb1c744a8c2d6c9aacd5edbb6581e98a7fb53",
@@ -1016,6 +1032,10 @@
             }
         },
         "keymae": null
+    },
+    "REIDSVILLE 2 NW, NC": {
+        "data_source_sha1": "0dc5cf809e2bc9ee3c1bf5496b3791e67f21116f",
+        "keymae": 1.514675268256488
     },
     "ROANOKE RAPIDS, NC": {
         "data_source_sha1": "859ad5ce8fa9139fb9994e4e2433f9e7d81d9b57",
