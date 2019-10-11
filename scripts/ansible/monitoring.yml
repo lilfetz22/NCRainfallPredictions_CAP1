@@ -1,0 +1,10 @@
+---
+- name: Install Stackdriver Agent for Google Cloud Platform
+  hosts: gce_instances_ips
+  become: yes
+  become_method: sudo
+  vars_files:
+    - gce_vars/stacktrace_key  # stackdriver API key defined here
+  roles:
+    - role: stackdriver
+      stackdriver_logfile_enabled: yes
