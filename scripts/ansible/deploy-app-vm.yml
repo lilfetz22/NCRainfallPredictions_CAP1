@@ -1,0 +1,5 @@
+---
+# rainfall-predictor-ansible
+- include: gce-instances.yml
+- include: monitoring.yml
+- include: app.yml
