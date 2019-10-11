@@ -1,0 +1,69 @@
+---
+# rainfall-predictor-ansible
+- name: Create Compute Engine instance
+  hosts: local
+  gather_facts: False
+  vars_files:
+    - gce_vars/auth
+    - gce_vars/machines
+    - gce_vars/zone
+  tasks:
+    - name: Create a persistent data disk
+      gcp_compute_disk:
+        name: rainfalld-persistent-storage
+        size_gb: 2
+        # disk_encryption_key:
+        #   raw_key: {{ persistent_disk_encryption_key }}
+        zone: "{{ zone }}"
+        project: "{{ project }}"
+        auth_kind: "{{ auth_kind }}"
+        service_account_file: "{{ credentials_file }}"
+        state: present
+      register: gcea_pdisk
+
+    - name: Create an IP address for vm instance
+      gcp_compute_address:
+        name: "{{ name_zonea }}-ip"
+        region: "{{ region }}"
+        project: "{{ project }}"
+        service_account_file: "{{ credentials_file }}"
+        auth_kind: "{{ auth_kind }}"
+      register: gcea_ip
+
+    - name: Bring up the vm instance.
+      gcp_compute_instance:
+        name: "{{ name_zonea }}"
+        machine_type: "{{ machine_type }}"
+        disks:
+          - auto_delete: true             # Boot image disk
+            boot: true
+            initialize_params:
+              source_image: "{{ image }}"
+          - auto_delete: false            # Connect persistent disk (unmounted)
+            interface: SCSI
+            mode: READ_WRITE
+            source: "{{ gcea_pdisk }}"
+            # disk_encryption_key:
+            #   raw_key: {{ persistent_disk_encryption_key }}
+        network_interfaces:
+          - access_configs:
+              - name: External NAT
+                nat_ip: "{{ gcea_ip }}"
+                type: ONE_TO_ONE_NAT
+        tags:
+          items:
+            # - http-server
+            - rainfalld
+        zone: "{{ zone }}"
+        project: "{{ project }}"
+        service_account_file: "{{ credentials_file }}"
+        auth_kind: "{{ auth_kind }}"
+      register: gcea
+
+  post_tasks:
+    - name: Wait for SSH for instances in first zone
+      wait_for: delay=1 host={{ gcea_ip.address }} port=22 state=started timeout=30
+
+    - name: Save host data for first zone
+      add_host: hostname={{ gcea_ip.address }} groupname=gce_instances_ips
+
