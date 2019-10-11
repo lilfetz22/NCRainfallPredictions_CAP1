@@ -1,0 +1,30 @@
+---
+# configure
+- name: Check if persistent disk is connected to instance
+  shell: "file -sL /dev/disk/by-id/google-{{ gcea_pdisk }}"
+  register: disk_exists
+
+- name: Format disk
+  shell: "mkfs.ext4 -m 0 -F -E lazy_itable_init=0,lazy_journal_init=0,discard /dev/disk/by-id/google-"
+  when: "'UUID=' not in disk_exists.stdout"
+
+- name: Run check for mount destination directory
+  stat: path="/var/cache/rainfall-predictor"
+  register: result
+
+- name: Create mount directory
+  file:
+    dest: "/var/cache/rainfall-predictor"
+    state: directory
+    owner: rainfalld
+    group: rainfalld
+    mode: 0755
+  when: result.stat.exists == false or results.stat.isdir == false
+
+- name: Mount drive
+  mount:
+    path: "/var/cache/rainfall-predictor"
+    src: "/dev/disk/by-id/google-{{ gcea_pdisk }}"
+    fstype: ext4
+    opts: discard,defaults
+    state: mounted

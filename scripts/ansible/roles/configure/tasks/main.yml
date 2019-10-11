@@ -1,0 +1,6 @@
+---
+# configure
+- include: create-admin.yml
+- include: security-lockdown.yml
+- include: mount-persistent-disk.yml
+- include: create-app-service.yml
