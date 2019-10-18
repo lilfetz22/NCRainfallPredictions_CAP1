@@ -1,6 +1,7 @@
 ---
-- name: Set app source directory
-  app_dir: /usr/src/rainfall-predictor
+- name: Check for local_project_dir pass in
+  fail: msg="Playbook requires passed in local_project_dir"
+  when: local_project_dir is not defined or not local_project_dir
 
 - name: Run apt-get update
   command: apt-get update
@@ -16,7 +17,7 @@
     group: root
     mode: 0775
   with_items:
-    - {{ app_dir }}
+    - "{{ app_dir }}"
     - "{{ app_dir }}/config"
     - /var/log/rainfall-predictor
 
@@ -26,8 +27,9 @@
     dest: "{{ item.dest }}"
     mode: "{{ item.mode }}"
   with_items:
-    - { src: ../../requirements*.txt, dest: "{{ app_dir }}", mode: '0644' }
-    - { src: ../../dockerconfig/install_IntelMKL.sh, dest: "{{ app_dir }}/config", mode: '0774' }
+    - { src: "{{ local_project_dir }}/requirements.txt", dest: "{{ app_dir }}", mode: '0644' }
+    - { src: "{{ local_project_dir }}/requirements-intelpython.txt", dest: "{{ app_dir }}", mode: '0644' }
+    - { src: "{{ local_project_dir }}/dockerconfig/install_IntelMKL.sh", dest: "{{ app_dir }}/config", mode: '0774' }
 
 - name: Install special library for machine learning
   command: "{{ app_dir }}/config/install_IntelMKL.sh"
@@ -44,10 +46,9 @@
     dest: "{{ item.dest }}"
     mode: "{{ item.mode }}"
   with_items:
-    - { src: ../../dockerconfig/*, dest: "{{ app_dir }}/config", mode: '0644' }
-    - { src: ../../build/*, dest: "{{ app_dir }}", mode: '0444' }
-    - { src: ../../data/*, dest: "{{ app_dir }}/data", mode: '0444' }
-    - { src: ../../VERSION, dest: "{{ app_dir }}", mode: '0444' }
+    - { src: "{{ local_project_dir }}/build/*", dest: "{{ app_dir }}", mode: '0444' }
+    - { src: "{{ local_project_dir }}/data/*", dest: "{{ app_dir }}/data", mode: '0444' }
+    - { src: "{{ local_project_dir }}/VERSION", dest: "{{ app_dir }}", mode: '0444' }
 
 - name: Create executable inside /usr/bin
   command: |

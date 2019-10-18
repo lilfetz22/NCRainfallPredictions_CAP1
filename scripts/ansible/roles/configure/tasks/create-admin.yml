@@ -6,13 +6,16 @@
             --comment "Administrator"
             admin
 
+- name: Load password file locally
+  delegate_to: localhost                # run on local workstation instead of remote
+  include_vars:
+    file: "{{ local_project_dir }}/bin/secrets.yml"
+    name: diary
+
 - name: Generate password hash locally
   delegate_to: localhost                # run on local workstation instead of remote
-  vars_files:
-    - ../../bin/secrets.yml
-  expect:
-    command: echo {{ admin_secret }} | shasum -a 512 | awk -F " " '{print $1}'
-    register: password_hash
+  command: echo {{ diary.admin_secret }} | shasum -a 512 | awk -F " " '{print $1}'
+  register: password_hash
 
 - name: Set Admin password on remote
   become: true
