@@ -50,6 +50,8 @@
               - name: External NAT
                 nat_ip: "{{ gcea_ip }}"
                 type: ONE_TO_ONE_NAT
+        metadata:
+          enable-oslogin: true
         tags:
           items:
             # - http-server
@@ -62,7 +64,7 @@
 
   post_tasks:
     - name: Wait for SSH for instances in first zone
-      wait_for: delay=1 host={{ gcea_ip.address }} port=22 state=started timeout=30
+      wait_for: delay=1 host={{ gcea_ip.address }} port=22 state=started timeout=120
 
     - name: Save host data for first zone
       add_host: hostname={{ gcea_ip.address }} groupname=gce_instances_ips
