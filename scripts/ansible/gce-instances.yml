@@ -70,7 +70,7 @@
 
   post_tasks:
     - name: Wait for SSH for instances in first zone
-      wait_for: delay=1 host={{ gcea_ip.address }} port=22 state=started timeout=120
+      wait_for: delay=1 host={{ gcea_ip.address }} port=22 state=started timeout=240
 
     - name: Save host data for first zone
       add_host: hostname={{ gcea_ip.address }} groupname=gce_instances_ips
