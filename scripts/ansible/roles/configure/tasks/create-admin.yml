@@ -1,20 +1,22 @@
 ---
 # configure
-- name: Build system daemon user
-  command: >
-    useradd --user-group --groups sudo --create-home
-            --comment "Administrator"
-            admin
+- name: Build Administrator user
+  user:
+    name: admin
+    comment: "Administrator"
+    create_home: yes
+    groups: sudo
+    append: yes
 
-- name: Load password file locally
-  delegate_to: localhost                # run on local workstation instead of remote
+- name: Load password file
   include_vars:
     file: "{{ local_project_dir }}/bin/secrets.yml"
     name: diary
 
-- name: Generate password hash locally
-  delegate_to: localhost                # run on local workstation instead of remote
-  command: echo {{ diary.admin_secret }} | shasum -a 512 | awk -F " " '{print $1}'
+- name: Generate password hash locally          
+  # run on local workstation instead of remote
+  local_action: "command echo {{ diary.admin_secret | password_hash('sha512') }}"
+  become: false
   register: password_hash
 
 - name: Set Admin password on remote

@@ -16,10 +16,7 @@
   file:
     dest: "/var/cache/rainfall-predictor"
     state: directory
-    owner: rainfalld
-    group: rainfalld
-    mode: 0755
-  when: result.stat.exists == false or results.stat.isdir == false
+    mode: "0755"
 
 - name: Mount drive
   mount:
@@ -28,3 +25,9 @@
     fstype: ext4
     opts: discard,defaults
     state: mounted
+
+- name: Correct permissions on mounted directory
+  file:
+    path: "/var/cache/rainfall-predictor"
+    owner: rainfalld
+    group: daemon
