@@ -1,13 +1,42 @@
 ---
-- name: Check for local_project_dir pass in
+- name: local_project_dir not provided
   fail: msg="Playbook requires passed in local_project_dir"
   when: local_project_dir is not defined or not local_project_dir
 
-- name: Run apt-get update
-  command: apt-get update
+- name: Update repositories cache and install python3 and more packages
+  apt: 
+    name: "{{ packages }}"
+    update_cache: yes
+    cache_valid_time: 3600
+    autoclean: yes
+  vars:
+    packages:
+      - python3
+      - python3-pip
+      - apt-transport-https     # support apt HTTPS connections (needed for intel repo)
+      - ca-certificates         # support apt HTTPS connections (needed for intel repo)
 
-- name: Install python3
-  command: apt-get install python3 -y
+- name: Setup python alternatives (python3 as default)
+  alternatives:
+    name: python
+    link: /usr/bin/python
+    path: "{{ item.path }}"
+    priority: "{{ item.priority }}"
+  with_items:
+    - { priority: 27, path: "/usr/bin/python2.7" }
+    - { priority: 200, path: "/usr/bin/python2" }
+    - { priority: 35, path: "/usr/bin/python3.5" }
+    - { priority: 300, path: "/usr/bin/python3" }
+
+- name: Ensure auto-mode (priority order) for python alternatives
+  command: update-alternatives --auto python
+
+- name: Setup pip alternatives (pip3 as default)
+  alternatives:
+    name: pip
+    link: /usr/bin/pip
+    path: /usr/bin/pip3
+    priority: 300
 
 - name: Create app directory
   file: 
@@ -35,10 +64,10 @@
   command: "{{ app_dir }}/config/install_IntelMKL.sh"
 
 - name: Install app python dependencies
-  command: pip install --no-cache-dir -r requirements.txt
+  command: "pip install --no-cache-dir -r {{app_dir}}/requirements.txt"
 
 - name: Install IntelPython library
-  command: pip install --no-cache-dir -r requirements-intelpython.txt
+  command: "pip install --no-cache-dir -r {{app_dir}}/requirements-intelpython.txt"
 
 - name: Copy core app code
   copy: 
@@ -46,23 +75,35 @@
     dest: "{{ item.dest }}"
     mode: "{{ item.mode }}"
   with_items:
-    - { src: "{{ local_project_dir }}/build/*", dest: "{{ app_dir }}", mode: '0444' }
-    - { src: "{{ local_project_dir }}/data/*", dest: "{{ app_dir }}/data", mode: '0444' }
+    - { src: "{{ local_project_dir }}/build/", dest: "{{ app_dir }}", mode: '0444' }
+    - { src: "{{ local_project_dir }}/data/", dest: "{{ app_dir }}/data", mode: '0444' }
     - { src: "{{ local_project_dir }}/VERSION", dest: "{{ app_dir }}", mode: '0444' }
 
 - name: Create executable inside /usr/bin
-  command: |
-    chmod +x "{{ app_dir }}/main.py"
-    ln -s "{{ app_dir }}/main.py" /usr/bin/rainfall-predictor
+  file:
+    src: "{{ item.src }}"
+    path: "{{ item.path }}"
+    state: "{{ item.state }}"
+    mode: "{{ item.mode }}"
+  with_items:
+    - { state: file, path: "{{ app_dir }}/main.py", mode: "0555", src: "" }
+    - { state: link, src: "{{ app_dir }}/main.py", path: "/usr/bin/rainfall-predictor", mode: "0555" }
 
 - name: Build system daemon user
-  command: >
-    useradd --system --no-user-group --gid daemon
-            --create-home --home-dir "/var/cache/rainfall-predictor"
-            rainfalld
+  user:
+    name: rainfalld
+    comment: "Rainfall Estimation System Daemon"
+    create_home: yes
+    home: "/var/cache/rainfall-predictor"
+    group: daemon
+    system: yes
 
 - name: Enable log location for daemon
-  command: chown rainfalld "/var/log/rainfall-predictor"
+  file:
+    path: "/var/log/rainfall-predictor"
+    owner: rainfalld 
 
 - name: Cleanup installation
-  command: rm -rf "{{ app_dir }}/config"
+  file:
+    state: absent
+    path: "{{ app_dir }}/config"
