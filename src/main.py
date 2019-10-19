@@ -14,7 +14,7 @@ def main():
 
 	# Load any previous results if they exist
 	try:
-		prevResults = path.join(path.dirname(path.abspath(__file__)),'data','manipulated_data','allMAE.json')
+		prevResults = path.join(path.dirname(path.realpath(__file__)),'data','manipulated_data','allMAE.json')
 		shutil.copyfile(
 			prevResults,
 			path.join(path.expanduser("~"), 'allMAE.json')
