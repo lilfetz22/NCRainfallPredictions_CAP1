@@ -1,0 +1,14 @@
+---
+# Google Stackdriver installation
+
+- name: Install stackdriver logging agent
+  script: install-logging-agent.sh
+  args:
+    executable: bash
+  when: log_agent == true
+
+- name: Install stackdriver monitoring agent
+  script: install-monitoring-agent.sh
+  args:
+    executable: bash
+  when: sys_agent == true
