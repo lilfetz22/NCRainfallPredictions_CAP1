@@ -2,4 +2,4 @@
 localhost ansible_connection=local
 
 [gce_instances]
-myinstance[1:4]
+myinstance
