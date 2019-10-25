@@ -1,6 +1,13 @@
 {
+    "ALBEMARLE, NC": [
+        "CHESTERFIELD 3 E, SC",
+        "CHERAW, SC",
+        "PAGELAND 9.0 WNW, SC",
+        "FORT MILL 4 NW, SC"
+    ],
     "ARCOLA, NC": [
-        "JOHN KERR DAM, VA"
+        "JOHN KERR DAM, VA",
+        "EMPORIA, VA"
     ],
     "ASHEVILLE AIRPORT, NC": [
         "CAESARS HEAD, SC",
@@ -31,6 +38,11 @@
         "NEWFOUND GAP, TN",
         "TOWNSEND 5S, TN"
     ],
+    "BURLINGTON, NC": [
+        "CHATHAM, VA",
+        "MARTINSVILLE FILTER PLANT, VA",
+        "SOUTH BOSTON, VA"
+    ],
     "CASAR, NC": [
         "CHESNEE 7 WSW, SC",
         "GAFFNEY 6 E, SC"
@@ -60,6 +72,10 @@
         "MARTINSVILLE FILTER PLANT, VA",
         "STUART, VA"
     ],
+    "ENFIELD, NC": [
+        "JOHN KERR DAM, VA",
+        "EMPORIA, VA"
+    ],
     "FOREST CITY 8 W, NC": [
         "CHESNEE 7 WSW, SC",
         "GAFFNEY 6 E, SC",
@@ -78,6 +94,11 @@
         "ELIZABETHTON, TN",
         "ROAN MOUNTAIN 3SW, TN"
     ],
+    "GREENSBORO AP, NC": [
+        "MARTINSVILLE FILTER PLANT, VA",
+        "MEADOWS OF DAN 5 SW, VA",
+        "STUART, VA"
+    ],
     "HAYESVILLE 1 NE, NC": [
         "CLAYTON 1 SSW, GA",
         "BLAIRSVILLE EXP STA, GA",
@@ -85,6 +106,7 @@
         "SAUTEE 3W, GA"
     ],
     "HENDERSON 2 NNW, NC": [
+        "SOUTH BOSTON, VA",
         "JOHN KERR DAM, VA"
     ],
     "HENDERSONVILLE 1 NE, NC": [
@@ -102,6 +124,11 @@
         "GREENEVILLE EXP STA, TN",
         "NEWPORT 1 NW, TN"
     ],
+    "JACKSON SPRINGS 5 WNW, NC": [
+        "CHESTERFIELD 3 E, SC",
+        "CHERAW, SC",
+        "PAGELAND 9.0 WNW, SC"
+    ],
     "KING, NC": [
         "STUART, VA"
     ],
@@ -117,7 +144,11 @@
         "WALHALLA, SC"
     ],
     "LAURINBURG, NC": [
+        "DARLINGTON, SC",
         "DILLON, SC",
+        "FLORENCE REGIONAL AIRPORT, SC",
+        "FLORENCE 8 NE, SC",
+        "CHESTERFIELD 3 E, SC",
         "CHERAW, SC"
     ],
     "LONGWOOD, NC": [
@@ -142,7 +173,12 @@
         "STUART, VA"
     ],
     "MOUNT HOLLY 4 NE, NC": [
-        "FORT MILL 4 NW, SC"
+        "CATAWBA, SC",
+        "CHESNEE 7 WSW, SC",
+        "CHESTER 1 SE, SC",
+        "FORT MILL 4 NW, SC",
+        "GAFFNEY 6 E, SC",
+        "LOCKHART, SC"
     ],
     "MOUNT MITCHELL AREA, NC": [
         "ERWIN 1 W, TN"
