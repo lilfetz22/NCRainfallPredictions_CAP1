@@ -7,6 +7,7 @@ StartLimitAction=reboot
 
 [Service]
 Type=simple
+Nice=-15
 Restart=always
 RestartSec=2
 User={{ app_daemon }}
