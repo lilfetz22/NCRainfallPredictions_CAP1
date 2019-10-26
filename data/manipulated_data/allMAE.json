@@ -66,6 +66,7 @@
         "keymae": 1.590523945
     },
     "ARCOLA, NC": {
+        "data_source_sha1": "a8975dce8cf2d63f5257d01f117efdee9c17cf2b",
         "exogen": {
             "EMPORIA, VA": {
                 "data_source_sha1": "1e6b2c123224017f854a62cef7c630ecf693e009",
@@ -80,7 +81,7 @@
                 "exmae": 1.83854245
             }
         },
-        "keymae": null
+        "keymae": 1.541046192
     },
     "ASHEVILLE AIRPORT, NC": {
         "data_source_sha1": "6b38ce41d8945ab24a571779666981fadd0f506c",
@@ -677,6 +678,7 @@
         "keymae": 1.612306154
     },
     "GRANDFATHER MTN, NC": {
+        "data_source_sha1": "b527f058528d2df0db12e64c9ce6b8871b393a89",
         "exogen": {
             "ELIZABETHTON, TN": {
                 "exmae": null
@@ -688,7 +690,7 @@
                 "exmae": null
             }
         },
-        "keymae": null
+        "keymae": 2.583667713
     },
     "GREENSBORO AP, NC": {
         "data_source_sha1": "b681b757427b610cff265a79716e7d81dada4282",
