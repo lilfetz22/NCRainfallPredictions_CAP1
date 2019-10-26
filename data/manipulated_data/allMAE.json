@@ -206,10 +206,10 @@
         "exogen": {
             "ROAN MOUNTAIN 3SW, TN": {
                 "data_source_sha1": "74515a0df40e417d19305924953cc4767b218aaa",
-                "exmae": 3.1150406350016864
+                "exmae": 3.115040635
             }
         },
-        "keymae": 2.4809657084670653
+        "keymae": 2.480965708
     },
     "BREVARD, NC": {
         "data_source_sha1": "f0a1d74e50575c020d87f71c592684f05281f301",
@@ -337,7 +337,7 @@
                 "exmae": 1.838256224
             }
         },
-        "keymae": 1.9931330930000002
+        "keymae": 1.993133093
     },
     "CHARLOTTE AREA, NC": {
         "data_source_sha1": "8633b0bd43dfc8b740c5e279ccf2bf9f3a67f358",
@@ -510,68 +510,68 @@
         "exogen": {
             "MARTINSVILLE FILTER PLANT, VA": {
                 "data_source_sha1": "34d95022a76d7e2f8313480da3e3c7976a5912c4",
-                "exmae": 1.8526283068064833
+                "exmae": 1.852628307
             },
             "MARTINSVILLE FILTER PLANT, VA|MEADOWS OF DAN 5 SW, VA": {
                 "data_source_sha1": "13bfc62618f1f65eef4d618acb67fe4caae0b054",
-                "exmae": 2.082558684944888
+                "exmae": 2.082558685
             },
             "MARTINSVILLE FILTER PLANT, VA|MEADOWS OF DAN 5 SW, VA|STUART, VA": {
                 "data_source_sha1": "cc6c88db28a96890c3c5cff1dd41ef55f2d0ad24",
-                "exmae": 2.021224928021283
+                "exmae": 2.021224928
             },
             "MARTINSVILLE FILTER PLANT, VA|STUART, VA": {
                 "data_source_sha1": "70616da0e3af08c85f8efaa1099a6b09414f2912",
-                "exmae": 2.043754322484901
+                "exmae": 2.043754322
             },
             "MEADOWS OF DAN 5 SW, VA": {
                 "data_source_sha1": "cd7434002fcbd88628bca26b30f2d3bced50b2ee",
-                "exmae": 1.913366953756763
+                "exmae": 1.913366954
             },
             "MEADOWS OF DAN 5 SW, VA|STUART, VA": {
                 "data_source_sha1": "630ea247a2c88431e3f053f63c12f1752a7d0ff7",
-                "exmae": 1.9742144456689674
+                "exmae": 1.974214446
             },
             "STUART, VA": {
                 "data_source_sha1": "b6c96f2e6bbd573866446a697483cd6950ee03ae",
-                "exmae": 1.92662463835457
+                "exmae": 1.926624638
             }
         },
-        "keymae": 1.5765827847357705
+        "keymae": 1.576582785
     },
     "EDEN, NC": {
         "data_source_sha1": "739f395ac20ca869c286410cc08e49f457fa266c",
         "exogen": {
             "CHATHAM, VA": {
                 "data_source_sha1": "db48bbfb387660ce5739decff5cc2a68f953509f",
-                "exmae": 1.8460850166486298
+                "exmae": 1.846085017
             },
             "CHATHAM, VA|MARTINSVILLE FILTER PLANT, VA": {
                 "data_source_sha1": "e929130788bdf1b628f674691d754bdd1987748b",
-                "exmae": 1.9828068829644228
+                "exmae": 1.982806883
             },
             "CHATHAM, VA|MARTINSVILLE FILTER PLANT, VA|STUART, VA": {
                 "data_source_sha1": "07da5939cd56a0667c5f3bb6a6f49598f0e36f55",
-                "exmae": 1.9703034738851732
+                "exmae": 1.970303474
             },
             "CHATHAM, VA|STUART, VA": {
                 "data_source_sha1": "1f31abd88c71072bdc00570089dd31ef0c674399",
-                "exmae": 1.982617107695725
+                "exmae": 1.982617108
             },
             "MARTINSVILLE FILTER PLANT, VA": {
                 "data_source_sha1": "34d95022a76d7e2f8313480da3e3c7976a5912c4",
-                "exmae": 2.100087194837946
+                "exmae": 2.100087195
             },
             "MARTINSVILLE FILTER PLANT, VA|STUART, VA": {
                 "data_source_sha1": "70616da0e3af08c85f8efaa1099a6b09414f2912",
-                "exmae": 2.0707214833972962
+                "exmae": 2.070721483
             },
             "STUART, VA": {
                 "data_source_sha1": "b6c96f2e6bbd573866446a697483cd6950ee03ae",
-                "exmae": 1.8660122347425452
+                "exmae": 1.866012235
             }
         },
-        "keymae": 1.5210608625653732
+        "keymae": 1.521060863
     },
     "ENFIELD, NC": {
         "data_source_sha1": "e61ff22181d8d6300ac5433de84bbbafd285be67",
@@ -715,66 +715,66 @@
         "exogen": {
             "BLAIRSVILLE EXP STA, GA": {
                 "data_source_sha1": "79b1c3c6c2444be996b2d988184d08dace41e5d2",
-                "exmae": 1.963876095477006
+                "exmae": 1.963876095
             },
             "BLAIRSVILLE EXP STA, GA|HELEN, GA": {
                 "data_source_sha1": "b512bc5675a8cae6980b105ea090045daf671542",
-                "exmae": 2.112759535717524
+                "exmae": 2.112759536
             },
             "BLAIRSVILLE EXP STA, GA|HELEN, GA|SAUTEE 3W, GA": {
                 "data_source_sha1": "66fe97e2a49f15c558fb0cb37adb504947592d76",
-                "exmae": 2.2184897495919413
+                "exmae": 2.21848975
             },
             "BLAIRSVILLE EXP STA, GA|SAUTEE 3W, GA": {
                 "data_source_sha1": "d14fbe4badde0b25417321db6bfd04abc37bac2e",
-                "exmae": 2.1983237884410327
+                "exmae": 2.198323788
             },
             "CLAYTON 1 SSW, GA": {
                 "data_source_sha1": "96609d3b88117abdcd4c158dc30e16a1ab8fbdca",
-                "exmae": 1.927083149390412
+                "exmae": 1.927083149
             },
             "CLAYTON 1 SSW, GA|BLAIRSVILLE EXP STA, GA": {
                 "data_source_sha1": "e36342839d77d225bf85e28ba9a21a56373f10db",
-                "exmae": 1.9887392505158472
+                "exmae": 1.988739251
             },
             "CLAYTON 1 SSW, GA|BLAIRSVILLE EXP STA, GA|HELEN, GA": {
                 "data_source_sha1": "0361470c6ddc1d8dafc8116226a6f0322705d214",
-                "exmae": 2.0750937861552172
+                "exmae": 2.075093786
             },
             "CLAYTON 1 SSW, GA|BLAIRSVILLE EXP STA, GA|HELEN, GA|SAUTEE 3W, GA": {
                 "data_source_sha1": "f28b8e7582ca2b1d6fc3736799443613f17e4c8d",
-                "exmae": 2.1716228662839745
+                "exmae": 2.171622866
             },
             "CLAYTON 1 SSW, GA|BLAIRSVILLE EXP STA, GA|SAUTEE 3W, GA": {
                 "data_source_sha1": "f9cf5498e285075c6b61afe9a77d540b93bead04",
-                "exmae": 2.175204145106459
+                "exmae": 2.175204145
             },
             "CLAYTON 1 SSW, GA|HELEN, GA": {
                 "data_source_sha1": "5525b7d056bababae301cbad9651ca36bafdd5b3",
-                "exmae": 2.067363942502022
+                "exmae": 2.067363943
             },
             "CLAYTON 1 SSW, GA|HELEN, GA|SAUTEE 3W, GA": {
                 "data_source_sha1": "02391eefca5f84fd2164f30a9e9ca8df9b7d0e2d",
-                "exmae": 2.2498543360985828
+                "exmae": 2.249854336
             },
             "CLAYTON 1 SSW, GA|SAUTEE 3W, GA": {
                 "data_source_sha1": "77d890b7f85c520a1b8360981807adc91f5e6462",
-                "exmae": 2.2310358276039453
+                "exmae": 2.231035828
             },
             "HELEN, GA": {
                 "data_source_sha1": "e9ca7b613cbe839ac224248cc51316610be35dd5",
-                "exmae": 2.117885806178534
+                "exmae": 2.117885806
             },
             "HELEN, GA|SAUTEE 3W, GA": {
                 "data_source_sha1": "7666c1de06eb205c018aa509aa6397886d7e5fa3",
-                "exmae": 2.324997605865302
+                "exmae": 2.324997606
             },
             "SAUTEE 3W, GA": {
                 "data_source_sha1": "b870286d9149a1691d13810183ef9411d5e5c906",
-                "exmae": 2.3463812670500572
+                "exmae": 2.346381267
             }
         },
-        "keymae": 1.6711909172121096
+        "keymae": 1.671190917
     },
     "HENDERSON 2 NNW, NC": {
         "data_source_sha1": "a65c35a5851406ec7df39e8b07a3cd6c1ea8cf14",
@@ -935,10 +935,10 @@
         "exogen": {
             "STUART, VA": {
                 "data_source_sha1": "b6c96f2e6bbd573866446a697483cd6950ee03ae",
-                "exmae": 1.838573506045001
+                "exmae": 1.838573506
             }
         },
-        "keymae": 1.5797669943305384
+        "keymae": 1.579766994
     },
     "LAKE LURE 2, NC": {
         "data_source_sha1": "75edafd2137809975b6660efa45848a34405390a",
@@ -1251,70 +1251,70 @@
         "exogen": {
             "ERWIN 1 W, TN": {
                 "data_source_sha1": "a42f839d575f4b5f595ad09ddd05739c73a9a8a2",
-                "exmae": 1.639991509035022
+                "exmae": 1.639991509
             },
             "ERWIN 1 W, TN|GREENEVILLE EXP STA, TN|NEWPORT 1 NW, TN": {
                 "data_source_sha1": "332b8b7b59197daa813daec7ba9001c351013805",
-                "exmae": 1.6435891103593887
+                "exmae": 1.64358911
             },
             "GREENEVILLE EXP STA, TN": {
                 "data_source_sha1": "ade192904f5758a2ef5750afe89f81612fdc007f",
-                "exmae": 1.4447718434140582
+                "exmae": 1.444771843
             }
         },
-        "keymae": 1.4291167444541135
+        "keymae": 1.429116744
     },
     "MONROE 2 SE, NC": {
         "data_source_sha1": "981e22dc3b35bff0fd4a00b7ba33347ac3ad67cd",
         "exogen": {
             "CATAWBA, SC": {
                 "data_source_sha1": "097afe5b06114c232325086dc3a9c6481a3de4e1",
-                "exmae": 1.9310956942803539
+                "exmae": 1.931095694
             },
             "CATAWBA, SC|FORT MILL 4 NW, SC": {
                 "data_source_sha1": "c00a3a842ff9aa30b1a27c2dcb55c7c05778e54c",
-                "exmae": 1.936799005728547
+                "exmae": 1.936799006
             },
             "FORT MILL 4 NW, SC": {
                 "data_source_sha1": "42e692135d97e0bbd63499a34bf5b34eaf0ca38e",
-                "exmae": 1.8867418061943173
+                "exmae": 1.886741806
             },
             "PAGELAND 9.0 WNW, SC": {
                 "data_source_sha1": "aa3e54288d466a656553c2e21f4e95a8b89a6c78",
-                "exmae": 1.973851173779998
+                "exmae": 1.973851174
             },
             "PAGELAND 9.0 WNW, SC|CATAWBA, SC": {
                 "data_source_sha1": "f1cf6aeb6aadc5d3e4d0a29e8872e34789cc2982",
-                "exmae": 1.9806424994409355
+                "exmae": 1.980642499
             },
             "PAGELAND 9.0 WNW, SC|CATAWBA, SC|FORT MILL 4 NW, SC": {
                 "data_source_sha1": "f2a7a3487d7fe40975dd311d450759731db77f94",
-                "exmae": 1.9824421301025994
+                "exmae": 1.98244213
             },
             "PAGELAND 9.0 WNW, SC|FORT MILL 4 NW, SC": {
                 "data_source_sha1": "3831c9eb927869fdc988f585e1e8feb45edc6efe",
-                "exmae": 1.975315388650806
+                "exmae": 1.975315389
             }
         },
-        "keymae": 1.7980278853798453
+        "keymae": 1.798027885
     },
     "MOUNT AIRY 2 W, NC": {
         "data_source_sha1": "6371c7232e3a7a9d4b04a5f039960a53fc2a2886",
         "exogen": {
             "MEADOWS OF DAN 5 SW, VA": {
                 "data_source_sha1": "cd7434002fcbd88628bca26b30f2d3bced50b2ee",
-                "exmae": 2.444849740845571
+                "exmae": 2.444849741
             },
             "MEADOWS OF DAN 5 SW, VA|STUART, VA": {
                 "data_source_sha1": "630ea247a2c88431e3f053f63c12f1752a7d0ff7",
-                "exmae": 2.578087305564499
+                "exmae": 2.578087306
             },
             "STUART, VA": {
                 "data_source_sha1": "b6c96f2e6bbd573866446a697483cd6950ee03ae",
-                "exmae": 2.2994258836069448
+                "exmae": 2.299425884
             }
         },
-        "keymae": 2.099951002610403
+        "keymae": 2.099951003
     },
     "MOUNT HOLLY 4 NE, NC": {
         "data_source_sha1": "6c17da95287cedaa3a80a7292223fbe5d06c5e17",
@@ -1436,7 +1436,7 @@
                 "exmae": 1.613381999
             }
         },
-        "keymae": 1.6347849319999999
+        "keymae": 1.634784932
     },
     "MOUNT MITCHELL AREA, NC": {
         "data_source_sha1": "8ee52dd7f34807429dd4ad3b7687fb592ee5c457",
@@ -1463,10 +1463,10 @@
         "exogen": {
             "BLAIRSVILLE EXP STA, GA": {
                 "data_source_sha1": "79b1c3c6c2444be996b2d988184d08dace41e5d2",
-                "exmae": 1.881828715446987
+                "exmae": 1.881828715
             }
         },
-        "keymae": 1.6877677367159716
+        "keymae": 1.687767737
     },
     "OCONALUFTEE, NC": {
         "data_source_sha1": "128bb1c744a8c2d6c9aacd5edbb6581e98a7fb53",
@@ -1481,10 +1481,10 @@
         "exogen": {
             "MARTINSVILLE FILTER PLANT, VA": {
                 "data_source_sha1": "34d95022a76d7e2f8313480da3e3c7976a5912c4",
-                "exmae": 1.98657992800681
+                "exmae": 1.986579928
             }
         },
-        "keymae": 1.514675268256488
+        "keymae": 1.514675268
     },
     "ROANOKE RAPIDS, NC": {
         "data_source_sha1": "859ad5ce8fa9139fb9994e4e2433f9e7d81d9b57",
