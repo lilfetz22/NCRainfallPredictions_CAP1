@@ -314,9 +314,33 @@
     "BURLINGTON, NC": {
         "data_source_sha1": "c21afd8f4b55a10e74aa2cb8c144a402b26cfcae",
         "exogen": {
+            "CHATHAM, VA": {
+                "data_source_sha1": "db48bbfb387660ce5739decff5cc2a68f953509f",
+                "exmae": 1.246969975
+            },
+            "CHATHAM, VA|MARTINSVILLE FILTER PLANT, VA": {
+                "data_source_sha1": "e929130788bdf1b628f674691d754bdd1987748b",
+                "exmae": 1.283620255
+            },
+            "CHATHAM, VA|MARTINSVILLE FILTER PLANT, VA|SOUTH BOSTON, VA": {
+                "data_source_sha1": "57022fcfdd0c7dc6572a23963908c3cfd87e5b3b",
+                "exmae": 1.463874758
+            },
+            "CHATHAM, VA|SOUTH BOSTON, VA": {
+                "data_source_sha1": "b6ea72052dd6c65bcb403202aae67687cde49b08",
+                "exmae": 1.285531366
+            },
             "MARTINSVILLE FILTER PLANT, VA": {
                 "data_source_sha1": "34d95022a76d7e2f8313480da3e3c7976a5912c4",
                 "exmae": 1.242664607
+            },
+            "MARTINSVILLE FILTER PLANT, VA|SOUTH BOSTON, VA": {
+                "data_source_sha1": "41fea18e4bcd5c327f42ca51436ba564d7f86f9b",
+                "exmae": 1.391157781
+            },
+            "SOUTH BOSTON, VA": {
+                "data_source_sha1": "36148f61c85bd0e5321b101a36de35396e576d44",
+                "exmae": 1.217943571
             }
         },
         "keymae": 0.788801135
