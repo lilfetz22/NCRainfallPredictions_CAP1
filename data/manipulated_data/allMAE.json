@@ -1469,12 +1469,12 @@
         "keymae": 1.6877677367159716
     },
     "OCONALUFTEE, NC": {
-        "exogen": {},
-        "keymae": null
+        "data_source_sha1": "128bb1c744a8c2d6c9aacd5edbb6581e98a7fb53",
+        "keymae": 1.855681254
     },
     "PISGAH FOREST 3 NE, NC": {
-        "exogen": {},
-        "keymae": null
+        "data_source_sha1": "9cc40585ac5ef1c818bbbe0bb9f82f9952207082",
+        "keymae": 2.778801284
     },
     "REIDSVILLE 2 NW, NC": {
         "data_source_sha1": "0dc5cf809e2bc9ee3c1bf5496b3791e67f21116f",
@@ -1497,16 +1497,16 @@
         "keymae": 1.973340509
     },
     "ROBBINSVILLE AG 5 NE, NC": {
-        "exogen": {},
-        "keymae": null
+        "data_source_sha1": "53180b44fd687ec94c3ebf00b2e148a00c705a0c",
+        "keymae": 2.029450042
     },
     "ROSMAN, NC": {
-        "exogen": {},
-        "keymae": null
+        "data_source_sha1": "bed8fbfd62a03f31c82d757982a61b477deae4ef",
+        "keymae": 2.626506572
     },
     "SHELBY 2 NW, NC": {
-        "exogen": {},
-        "keymae": null
+        "data_source_sha1": "f520bf465b00fdba8cc674a0fff1cfce987888ab",
+        "keymae": 1.867760249
     },
     "TAPOCO, NC": {
         "data_source_sha1": "56bd8e49cd0f25b291e867c7ab00e13d214c1956",
