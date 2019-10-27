@@ -705,13 +705,16 @@
         "data_source_sha1": "b527f058528d2df0db12e64c9ce6b8871b393a89",
         "exogen": {
             "ELIZABETHTON, TN": {
-                "exmae": null
+                "data_source_sha1": "5873d53d75c1addd503e6bc4797f6304c6bba813",
+                "exmae": 2.68488472
             },
             "ELIZABETHTON, TN|ROAN MOUNTAIN 3SW, TN": {
-                "exmae": null
+                "data_source_sha1": "2f49a7b01af91b023e73d938e5aaaa15b78741c1",
+                "exmae": 2.973285892
             },
             "ROAN MOUNTAIN 3SW, TN": {
-                "exmae": null
+                "data_source_sha1": "74515a0df40e417d19305924953cc4767b218aaa",
+                "exmae": 2.978424928
             }
         },
         "keymae": 2.583667713
