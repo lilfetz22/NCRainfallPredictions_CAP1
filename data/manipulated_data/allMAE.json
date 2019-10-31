@@ -705,13 +705,16 @@
         "data_source_sha1": "b527f058528d2df0db12e64c9ce6b8871b393a89",
         "exogen": {
             "ELIZABETHTON, TN": {
-                "exmae": null
+                "data_source_sha1": "5873d53d75c1addd503e6bc4797f6304c6bba813",
+                "exmae": 2.68488472
             },
             "ELIZABETHTON, TN|ROAN MOUNTAIN 3SW, TN": {
-                "exmae": null
+                "data_source_sha1": "2f49a7b01af91b023e73d938e5aaaa15b78741c1",
+                "exmae": 2.973285892
             },
             "ROAN MOUNTAIN 3SW, TN": {
-                "exmae": null
+                "data_source_sha1": "74515a0df40e417d19305924953cc4767b218aaa",
+                "exmae": 2.978424928
             }
         },
         "keymae": 2.583667713
@@ -723,9 +726,25 @@
                 "data_source_sha1": "34d95022a76d7e2f8313480da3e3c7976a5912c4",
                 "exmae": 1.763337134
             },
+            "MARTINSVILLE FILTER PLANT, VA|MEADOWS OF DAN 5 SW, VA": {
+                "data_source_sha1": "13bfc62618f1f65eef4d618acb67fe4caae0b054",
+                "exmae": 1.882422888
+            },
+            "MARTINSVILLE FILTER PLANT, VA|MEADOWS OF DAN 5 SW, VA|STUART, VA": {
+                "data_source_sha1": "cc6c88db28a96890c3c5cff1dd41ef55f2d0ad24",
+                "exmae": 1.878667534
+            },
             "MARTINSVILLE FILTER PLANT, VA|STUART, VA": {
                 "data_source_sha1": "70616da0e3af08c85f8efaa1099a6b09414f2912",
                 "exmae": 1.88786062
+            },
+            "MEADOWS OF DAN 5 SW, VA": {
+                "data_source_sha1": "cd7434002fcbd88628bca26b30f2d3bced50b2ee",
+                "exmae": 1.730117146
+            },
+            "MEADOWS OF DAN 5 SW, VA|STUART, VA": {
+                "data_source_sha1": "630ea247a2c88431e3f053f63c12f1752a7d0ff7",
+                "exmae": 1.781853523
             },
             "STUART, VA": {
                 "data_source_sha1": "b6c96f2e6bbd573866446a697483cd6950ee03ae",
@@ -950,6 +969,14 @@
             "CHESTERFIELD 3 E, SC|CHERAW, SC": {
                 "data_source_sha1": "6157220fa0eadcddcb09fa6e7efc1723c88c27e0",
                 "exmae": 2.276928977
+            },
+            "CHESTERFIELD 3 E, SC|CHERAW, SC|PAGELAND 9.0 WNW, SC": {
+                "data_source_sha1": "d468dd99dcb42c132efc5422c88496da5f30b091",
+                "exmae": 2.113150678
+            },
+            "PAGELAND 9.0 WNW, SC": {
+                "data_source_sha1": "aa3e54288d466a656553c2e21f4e95a8b89a6c78",
+                "exmae": 2.116547397
             }
         },
         "keymae": 1.880135881
