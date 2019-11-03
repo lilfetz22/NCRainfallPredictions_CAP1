@@ -264,9 +264,9 @@ main() {
 	echo "SERVICE=${NAME}.service";
 	echo "APP=$($AUTOSTART && echo 'RUNNING' || echo 'INSTALLED')";
 	echo "TO CONNECT:"
-	echo "     $> ssh -i ~/.ssh/srvacct-gce sa_117909082819485756837@35.238.152.8"
+	echo "     $> ssh -i ~/.ssh/srvacct-gce sa_117909082819485756837@ip"
 	echo "     --or--";
-	echo "     $> open http://35.238.152.8";
+	echo "     $> open http://ip";
 	echo "";
 }
 
