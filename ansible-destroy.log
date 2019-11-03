@@ -1,0 +1,26 @@
+
+=========================================
+|   VM Builder for Rainfall Predictor   |
+=========================================
+START: Sun Nov  3 01:48:03 EDT 2019
+
+
+PLAY [Destroy all rainfall-estimation resources] *******************************
+
+TASK [Delete the instance] *****************************************************
+changed: [localhost]
+
+TASK [Delete the static ip address] ********************************************
+changed: [localhost]
+
+PLAY RECAP *********************************************************************
+localhost                  : ok=2    changed=2    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+
+[VM DESTROY] Total Execution Time: 142 seconds
+
+Google Cloud Resources Summary: 
+------------------------------- 
+   Compute Instance: RELEASED
+   Static IP: RELEASED
+   Persistent Data Disk: 1 Resource Allocated ($)
+

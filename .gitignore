@@ -5,8 +5,7 @@ __pycache__/
 # Project specific ignore entries
 bin
 build
-dockerconfig/*.secret
-stacktrace_key
+secrets.yml
 reports/api_key.py
 reports/nc_heatmap.html
 reports/data.js
