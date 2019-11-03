@@ -5,14 +5,8 @@ __pycache__/
 # Project specific ignore entries
 bin
 build
-dockerconfig/*.secret
+secrets.yml
 reports/api_key.py
 reports/nc_heatmap.html
 reports/data.js
-data/raw_data/shapefile/
-data/raw_data/shapefile1/tl_2013_37_place.dbf
-data/raw_data/shapefile1/
-data/raw_data/shapefile2/
-data/raw_data/shapefile3/
-data/raw_data/shapefile4/
-data/raw_data/shapefile5/
+data/raw_data/shapefile*

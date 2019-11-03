@@ -47,15 +47,7 @@ print_banner() {
 
 check_prereqs() {
 	missing_prereqs=0
-	command -v jupyter >/dev/null 2>&1 || { ((missing_prereqs++)); echo >&2 "MISSING PREREQ: jupyter is not installed but is required."; }
-	if [ -f "$DIRNAME/dockerconfig/.admin.secret" ]; then
-		if [ -z "$(egrep '^admin:[A-Za-z0-9 @#$%^&*()~.,:;_+=<>?-]+$' "$DIRNAME/dockerconfig/.admin.secret")" ]; then
-			((missing_prereqs++)); echo >&2 "PREREQ ERROR: .admin.secret file must match syntax 'admin:password' (no quotes).";
-		fi
-	else
-		((missing_prereqs++)); echo >&2 "MISSING PREREQ: $(basename "$DIRNAME")/dockerconfig/.admin.secret file missing.";
-	fi
-	
+	command -v jupyter >/dev/null 2>&1 || { ((missing_prereqs++)); echo >&2 "MISSING PREREQ: jupyter is not installed but is required."; }	
 	return "$missing_prereqs"
 }
 
@@ -102,8 +94,7 @@ build() {
 	echo && echo "building...";
 
 	# PRE-BUILD, due to not latest file in SRC, link it instead
-	rm -f "$DIRNAME/src/Data_Wrangling_CAP1.ipynb"
-	ln -s "$DIRNAME/reports/Data_Wrangling_Report_CAP1.ipynb" "$DIRNAME/src/Data_Wrangling_CAP1.ipynb"
+	ln -s "$DIRNAME/reports/Data_Story.ipynb" "$DIRNAME/src/Data_Story.ipynb"
 
 	# does not handle (within src) or maintain (within build) directory structures
 	for filename in "$DIRNAME"/src/*.ipynb; do
@@ -122,8 +113,18 @@ build() {
 		fi
 	done
 
+	for filename in "$DIRNAME"/src/*.py; do
+		cp "$filename" "$DIRNAME/$BUILD_DIR/"
+		COPY_SUCCESS="$?"
+		if [ $COPY_SUCCESS == 0 ] && [ $VERBOSE == true ]; then
+			echo "BUILD: added $file." && echo;
+		elif [ $COPY_SUCCESS != 0 ]; then
+			hit_error "ERROR: copy of $(basename $filename) failed."
+		fi
+	done
+
 	## POST-BUILD, revert changes
-	git checkout -- "$DIRNAME/src/Data_Wrangling_CAP1.ipynb"
+	rm "$DIRNAME/src/Data_Story.ipynb"
 
 	return $ERROR_COUNT
 }

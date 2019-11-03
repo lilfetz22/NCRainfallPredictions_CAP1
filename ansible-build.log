@@ -1,0 +1,188 @@
+
+=========================================
+|   VM Builder for Rainfall Predictor   |
+=========================================
+START: Sun Nov  3 01:17:23 EDT 2019
+
+[VM BUILD] Running code build script...
+
+================================
+|   Rainfall Predictor Build   |
+================================
+
+cleaning...
+clean complete.
+
+building...
+Python App build complete.
+
+[VM BUILD] Code Build completed! (11 seconds)
+
+Version: 1.1 => 1.2
+
+[APP_DEPLOY] Deploying application to Google Cloud Compute Instance...
+[APP_DEPLOY] Set ANSIBLE_CONFIG=/Users/gbpackers225/Development/lilfetz22/CapstoneProject1/scripts/ansible/ansible.cfg
+[APP_DEPLOY] $> ANSIBLE_CONFIG=/Users/gbpackers225/Development/lilfetz22/CapstoneProject1/scripts/ansible/ansible.cfg ansible-playbook --extra-vars "local_project_dir=/Users/gbpackers225/Development/lilfetz22/CapstoneProject1" /Users/gbpackers225/Development/lilfetz22/CapstoneProject1/scripts/ansible/deploy-app-vm.yml
+
+PLAY [Create Compute Engine instance] ******************************************
+
+TASK [Create a persistent data disk] *******************************************
+ok: [localhost]
+
+TASK [Create an IP address for vm instance] ************************************
+changed: [localhost]
+
+TASK [Bring up the vm instance.] ***********************************************
+changed: [localhost]
+
+TASK [Wait for SSH for instances in first zone] ********************************
+ok: [localhost]
+
+TASK [Save host data] **********************************************************
+changed: [localhost]
+
+PLAY [Install Stackdriver Agent for Google Cloud Platform] *********************
+
+TASK [Gathering Facts] *********************************************************
+ok: [34.70.3.208]
+
+TASK [stackdriver : Create credentials location] *******************************
+changed: [34.70.3.208]
+
+TASK [stackdriver : Install application default credentials] *******************
+changed: [34.70.3.208]
+
+TASK [stackdriver : Install stackdriver logging agent] *************************
+changed: [34.70.3.208]
+
+TASK [stackdriver : Install stackdriver monitoring agent] **********************
+changed: [34.70.3.208]
+
+PLAY [Install Rainfall Predictor app] ******************************************
+
+TASK [Gathering Facts] *********************************************************
+ok: [34.70.3.208]
+
+TASK [install : local_project_dir not provided] ********************************
+skipping: [34.70.3.208]
+
+TASK [install : Update repositories cache and install python3 and more packages] ***
+changed: [34.70.3.208]
+
+TASK [install : Setup python alternatives (python3 as default)] ****************
+changed: [34.70.3.208] => (item={u'priority': 27, u'path': u'/usr/bin/python2.7'})
+changed: [34.70.3.208] => (item={u'priority': 200, u'path': u'/usr/bin/python2'})
+changed: [34.70.3.208] => (item={u'priority': 35, u'path': u'/usr/bin/python3.5'})
+changed: [34.70.3.208] => (item={u'priority': 300, u'path': u'/usr/bin/python3'})
+
+TASK [install : Ensure auto-mode (priority order) for python alternatives] *****
+changed: [34.70.3.208]
+
+TASK [install : Setup pip alternatives (pip3 as default)] **********************
+changed: [34.70.3.208]
+
+TASK [install : Create app directory] ******************************************
+changed: [34.70.3.208] => (item=/usr/src/rainfall-predictor)
+changed: [34.70.3.208] => (item=/var/log/rainfall-predictor)
+
+TASK [install : Copy app dependency definition files] **************************
+changed: [34.70.3.208] => (item={u'dest': u'/usr/src/rainfall-predictor', u'src': u'/Users/gbpackers225/Development/lilfetz22/CapstoneProject1/requirements.txt', u'mode': u'0644'})
+changed: [34.70.3.208] => (item={u'dest': u'/usr/src/rainfall-predictor', u'src': u'/Users/gbpackers225/Development/lilfetz22/CapstoneProject1/requirements-intelpython.txt', u'mode': u'0644'})
+
+TASK [install : Install special library for machine learning] ******************
+changed: [34.70.3.208]
+
+TASK [install : Install app python dependencies] *******************************
+changed: [34.70.3.208]
+
+TASK [install : Install IntelPython library] ***********************************
+changed: [34.70.3.208]
+
+TASK [install : Copy core app code] ********************************************
+changed: [34.70.3.208] => (item={u'dest': u'/usr/src/rainfall-predictor', u'src': u'/Users/gbpackers225/Development/lilfetz22/CapstoneProject1/build/', u'mode': u'0444'})
+changed: [34.70.3.208] => (item={u'dest': u'/usr/src/rainfall-predictor/data', u'src': u'/Users/gbpackers225/Development/lilfetz22/CapstoneProject1/data/', u'mode': u'0444'})
+changed: [34.70.3.208] => (item={u'dest': u'/usr/src/rainfall-predictor', u'src': u'/Users/gbpackers225/Development/lilfetz22/CapstoneProject1/VERSION', u'mode': u'0444'})
+
+TASK [install : Create executable inside /usr/bin] *****************************
+changed: [34.70.3.208] => (item={u'path': u'/usr/src/rainfall-predictor/main.py', u'state': u'file', u'mode': u'0555', u'src': u''})
+changed: [34.70.3.208] => (item={u'src': u'/usr/src/rainfall-predictor/main.py', u'state': u'link', u'mode': u'0555', u'path': u'/usr/bin/rainfall-predictor'})
+
+TASK [install : Build system daemon user] **************************************
+changed: [34.70.3.208]
+
+TASK [install : Enable log location for daemon] ********************************
+changed: [34.70.3.208]
+
+TASK [configure : Check for local_project_dir pass in] *************************
+skipping: [34.70.3.208]
+
+TASK [configure : Build Administrator user] ************************************
+changed: [34.70.3.208]
+
+TASK [configure : Load password file] ******************************************
+ok: [34.70.3.208]
+
+TASK [configure : Generate password hash locally] ******************************
+changed: [34.70.3.208 -> localhost]
+
+TASK [configure : Set Admin password on remote] ********************************
+changed: [34.70.3.208]
+
+TASK [configure : Lock root user account] **************************************
+changed: [34.70.3.208]
+
+TASK [configure : Enable persistent log journal] *******************************
+changed: [34.70.3.208]
+
+TASK [configure : service] *****************************************************
+changed: [34.70.3.208]
+
+TASK [configure : Check if persistent disk is connected to instance] ***********
+changed: [34.70.3.208]
+
+TASK [configure : Format disk] *************************************************
+changed: [34.70.3.208]
+
+TASK [configure : Run check for mount destination directory] *******************
+ok: [34.70.3.208]
+
+TASK [configure : Create mount directory] **************************************
+ok: [34.70.3.208]
+
+TASK [configure : Mount drive] *************************************************
+changed: [34.70.3.208]
+
+TASK [configure : Correct permissions on mounted directory] ********************
+changed: [34.70.3.208]
+
+TASK [configure : Create app service file] *************************************
+changed: [34.70.3.208]
+
+TASK [configure : Register app service to start on boot] ***********************
+changed: [34.70.3.208]
+
+PLAY [Deploy Rainfall Predictor app] *******************************************
+
+TASK [Gathering Facts] *********************************************************
+ok: [34.70.3.208]
+
+TASK [run : Re-start rainfall-predictor] ***************************************
+changed: [34.70.3.208]
+
+PLAY RECAP *********************************************************************
+34.70.3.208                : ok=36   changed=30   unreachable=0    failed=0    skipped=2    rescued=0    ignored=0   
+localhost                  : ok=5    changed=3    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+
+
+[VM BUILD] GCE VM deployed in 687 seconds.
+[VM BUILD] Total Execution Time: 700 seconds
+
+  APP STATUS  
+ ------------ 
+SERVICE=rainfall-predictor.service
+APP=RUNNING
+TO CONNECT:
+     $> ssh -i ~/.ssh/srvacct-gce sa_117909082819485756837@ip
+     --or--
+     $> open http://ip
+
