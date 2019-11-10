@@ -27,7 +27,7 @@ A simple build can be accomplished cross-platform by running the following pytho
 
 If you want to deploy straight to Google Compute Engine, Run:
 
-`$> ./scripts/build-vm.sh`
+`$> ./scripts/deploy_vm.py`
 
 `--help` option will describe how to use the script.
 
@@ -42,8 +42,7 @@ If you want to deploy straight to Google Compute Engine, Run:
 # RECALL APPLICATION (LINUX ONLY)
 To tear down and release all GCE resources, Run:
 
-`$> ./scripts/build-vm.sh --destroy`
+`$> ./scripts/deploy_vm.py --destroy`
 
-This will release all resources except the persistent disk allocation.  Once all resources are
-released, Google Cloud billing will cease. 
+This will release all resources except the persistent disk allocation.  Once all resources are released, Google Cloud billing will cease. 
 
