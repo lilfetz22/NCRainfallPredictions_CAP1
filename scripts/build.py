@@ -22,9 +22,10 @@ import subprocess
 def eprint(*args, **kwargs):
     print(*args, file=sys.stderr, flush=True, **kwargs)
 
-def usage():
+def usage(printTo=""):
 	this_file = os.path.basename(os.path.abspath(__file__))
-	eprint("Usage: ./{0} [[-q | --quiet][-v |--verbose]] [-h | --help]".format(this_file))
+	printFn = print if printTo == "stdout" else eprint
+	printFn("Usage: ./{0} [[-q | --quiet][-v |--verbose]] [-h | --help]".format(this_file))
 	exit(1)
 
 def help():
@@ -32,10 +33,10 @@ def help():
     print(" Rainfall Predictor Build Script ")
     print("---------------------------------")
     print("Automated app build script.  Jupyter notebooks are converted to regular python files. " \
-         +"Built files are located in the ${DIRNAME%/}/$BUILD_DIR directory.")
+         +"Built files are located in the {0} directory.".format(os.path.join(os.path.basename(DIRNAME),BUILD_DIR)))
     print("")
     try: 
-        usage()
+        usage(printTo="stdout")
     except SystemExit:
         print("")
     print("Available Options: ")
@@ -54,7 +55,7 @@ def print_banner():
 
 def check_prereqs():
 	missing_prereqs = 0
-	# prereqs = []
+	prereqs = []
 	if os_version == 'Windows':
 		prereqs = [
 			{ 'test' : ["powershell.exe", "Get-Command jupyter"], 'isshell':False, 'onerror': "jupyter is not installed but is required." }
