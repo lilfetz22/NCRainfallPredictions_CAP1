@@ -22,9 +22,10 @@ import subprocess
 def eprint(*args, **kwargs):
     print(*args, file=sys.stderr, flush=True, **kwargs)
 
-def usage():
+def usage(printTo=""):
 	this_file = os.path.basename(os.path.abspath(__file__))
-	eprint("Usage: ./{0} [[-q | --quiet][-v |--verbose]] [-h | --help]".format(this_file))
+	printFn = print if printTo == "stdout" else eprint
+	printFn("Usage: ./{0} [[-q | --quiet][-v |--verbose]] [-h | --help]".format(this_file))
 	exit(1)
 
 def help():
@@ -32,10 +33,10 @@ def help():
     print(" Rainfall Predictor Build Script ")
     print("---------------------------------")
     print("Automated app build script.  Jupyter notebooks are converted to regular python files. " \
-         +"Built files are located in the ${DIRNAME%/}/$BUILD_DIR directory.")
+         +"Built files are located in the {0} directory.".format(os.path.join(os.path.basename(DIRNAME),BUILD_DIR)))
     print("")
     try: 
-        usage()
+        usage(printTo="stdout")
     except SystemExit:
         print("")
     print("Available Options: ")
@@ -54,10 +55,10 @@ def print_banner():
 
 def check_prereqs():
 	missing_prereqs = 0
-	# prereqs = []
+	prereqs = []
 	if os_version == 'Windows':
 		prereqs = [
-			{ 'test' : ["powershell.exe", "Get-Command jupyter"], 'isshell':False, 'onerror': "jupyter is not installed but is required." }
+			{ 'test' : ["powershell.exe", "Get-Command jupyter 2>&1 | out-null"], 'isshell':False, 'onerror': "jupyter is not installed but is required." }
 		]
 	elif os_version == 'Linux' or os_version == 'Darwin':
 		prereqs = [
@@ -130,7 +131,7 @@ def hit_error(error_str=""):
 	eprint(error_str)
 
 
-def build():
+def __build():
 	print("building...")
 
 	# does not handle (within src) or maintain (within build) directory structures
@@ -147,7 +148,7 @@ def build():
 		if os_version == 'Windows':
 			ext_cmd = [ 
 				'powershell.exe',
-				'jupyter nbconvert {0} --to script {1}'.format(loglevel,notebook)
+				'jupyter nbconvert {0} --to script "{1}"'.format(loglevel,notebook)
 			]
 			is_shellcmd = False
 
@@ -197,7 +198,7 @@ def build():
 				hit_error("ERROR: conversion of {} failed.".format(os.path.basename(notebook)))
 			else:
 				if VERBOSE == True:
-					print("BUILD: added {}.".format(notebook))
+					print("BUILD: added {}".format(os.path.join(os.path.basename(DIRNAME),BUILD_DIR,pyfile)))
 
 
 	## Make copies of any remaining *.py files to build directory
@@ -215,13 +216,15 @@ def build():
 			hit_error("ERROR: copy of {} failed.".format(os.path.basename(filename)))
 		else:
 			if VERBOSE == True:
-				print("BUILD: added {}.".format(filename))
+				print("BUILD: added {}".format(
+					os.path.join(os.path.basename(DIRNAME),BUILD_DIR,os.path.basename(filename))
+				))
 
 	return error_count
 
 
 ## Main Loop ##
-def main():
+def build():
 	global MODE_QUIET
 	if MODE_QUIET == True:
 		sys.stdout = open(os.devnull, 'w')
@@ -254,14 +257,7 @@ def main():
 		print("clean complete.")
 	
 	## BUILD
-	try:
-		build()
-	except KeyboardInterrupt as usr_canx:
-		if __name__ == "__main__":
-			eprint('\n'+"User interrupted build process.  Exiting...")
-			exit(1)
-		else:
-			raise(usr_canx)
+	__build()
 
 	if error_count > 0:
 		print("Python App build completed but with {} error(s).".format(error_count))
@@ -282,13 +278,19 @@ if __name__ == "__main__":
 	# ------------------------------
 	# CODE START - Ingest line args
 	# ------------------------------
-	process_args(sys.argv)
+	try:
+		process_args(sys.argv)
 
-	if check_prereqs() != 0: 
-		exit(1)
+		if check_prereqs() != 0: 
+			exit(1)
 
-	if not MODE_QUIET:
-		print_banner()
+		if not MODE_QUIET:
+			print_banner()
 
-	main()                    # Run Main Loop
-	exit(0)
+		build()
+
+	except KeyboardInterrupt as usr_canx:
+		eprint('\n'+"User interrupted build process.  Exiting...")
+		exit(1)	
+	else:
+		exit(0)
