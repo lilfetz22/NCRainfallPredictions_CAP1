@@ -21,7 +21,7 @@ import time
 import datetime
 from pytz import timezone
 from build import build as Builder
-from .bumpversion import bump
+from bumpversion import bump
 
 
 def eprint(*args, **kwargs):
@@ -82,7 +82,7 @@ def check_prereqs():
 	prereqs = []
 	if os_version == 'Windows':
 		prereqs = [
-			{ 'test' : ["powershell.exe", "Get-Command ansible"], 'isshell':False, 'onerror': "ansible is not installed but is required." }
+			{ 'test' : ["powershell.exe", "Get-Command ansible 2>&1 | out-null"], 'isshell':False, 'onerror': "ansible is not installed but is required." }
 		]
 	elif os_version == 'Linux' or os_version == 'Darwin':
 		prereqs = [
@@ -126,8 +126,9 @@ def timestamp():
 
 
 # Process line arguments
-def process_args( args ):
+def process_args( argslist ):
 	global MODE_QUIET, DESTROY, AUTOSTART, REBUILD, BUMP_VERSION, RELEASE_TYPE
+	args = argslist.copy()
 
 	# Argument Handlers
 	def request_help(i):
@@ -137,9 +138,12 @@ def process_args( args ):
 		MODE_QUIET = True
 	def set_releasetype(i):
 		global RELEASE_TYPE
-		# IMPLEMENT
-		eprint("RELEASE TYPE not yet supported.")
-		raise (Exception())
+		optarg = args[i+1]
+		if re.search(r'^(major|minor|update)$', optarg, re.RegexFlag.IGNORECASE):
+			RELEASE_TYPE = optarg
+			return({ 'increment': 1 })		# hop over optarg
+		else:
+			usage()
 	def toggleDestroy(i):
 		global DESTROY
 		DESTROY = True
@@ -159,28 +163,8 @@ def process_args( args ):
 		return("end_args")
 	def unknown(i):
 		usage()
-
-
-			# -r|--release)
-			# 	if [ "$2" ] && [ -n "$(echo "$2" | grep -iE "^(major|minor|update)$")" ]; then
-			# 		RELEASE_TYPE="${2}";
-			# 		shift
-			# 	else
-			# 		usage;
-			# 	fi
-			# 	;;
-			# "--release"=?*)
-			# 	OPTARG=${1#*=} 			# Delete everything up to "=" and keep the remainder.
-			# 	if [ -n "$(echo "$OPTARG" | grep -iE "^(major|minor|update)$")" ]; then
-			# 		RELEASE_TYPE="${OPTARG}";
-			# 		shift
-			# 	else
-			# 		usage;
-			# 	fi
-			# 	;;
-			# "--release"=)						# Handle the case of an empty --release=
-			# 	usage;
-		
+	
+	## equals denote has additional input parameter
 	switcher = {
 		'-h'        : request_help,
 		'--help'    : request_help,
@@ -197,22 +181,69 @@ def process_args( args ):
 		'--' : 		  end_args
 	}
 
-	eprint("Argument handler is not implemented yet.")
-	raise(Exception())
+	# Dynamically finds other alternatives from spec ^
+	compressedflags = list(filter(lambda opt: re.search(r'^-[^-][^=]*$', opt), switcher.keys()))
+	compressedflags = [re.sub(r'^-(.*)$', '\\1', i) for i in compressedflags]		# removes the hyphen
+	if len(compressedflags) > 1:
+		compressedflagsregex = re.compile("^-["+''.join(compressedflags)+"]{2,"+str(len(compressedflags))+"}$")
+	else:
+		compressedflagsregex = re.compile("^$")		# almost impossible to match 
 
-	for i in range(1,len(args)):
+	opts_w_input = dict(filter(lambda item: re.search(r'=$', item[0]), switcher.items()))
+	opts_w_input_keys = list(opts_w_input.keys())
+	for o in opts_w_input_keys:			# Fixes switcher so keys will be found
+		fn = opts_w_input[o]
+		if re.search(r'^-[^-]', o):				# single dash option (remove =)
+			opts_w_input.pop(o)
+			switcher.pop(o)
+			switcher[re.sub(r'^(.*)=$', '\\1',o)] = fn
+		elif re.search(r'^--[^-]', o):			# double dash option (change to space denoted)
+			switcher.pop(o)
+			switcher[re.sub(r'^(.*)=$', '\\1',o)] = fn
+	opts_w_input_regex = re.compile("^("+'|'.join(opts_w_input)+")(\S+)$")
+
+	## Massage Args to a normalized state (expand compressedflags, expand = to another index)
+	i_args = 1
+	for l in range(1,len(argslist)):	# original list (skip index 0 since it is the caller filename)
+		param = argslist[l]
+		if param != "" and compressedflagsregex.search(param):
+			del args[i_args]		# remove current combined arg
+			num_flags = 0
+			# uncompress flags
+			for a in range(1,len(param)):	# skip hyphen by starting at 1
+				i_args += num_flags
+				args.insert(i_args, '-'+param[a])
+				num_flags += 1
+			
+		elif opts_w_input_regex.match(param):
+			# separate option from value
+			option = re.sub(r'(.*)=$','\\1', opts_w_input_regex.sub('\\1',param))  # remove =
+			optarg = opts_w_input_regex.sub('\\2',param)
+			args[i_args] = option
+			i_args += 1
+			args.insert(i_args, optarg)
+
+		else:
+			pass
+
+		i_args += 1						# increment with l
+
+
+	i = 0		# skip index 0 since it is the filename not an parameter
+	while i+1 < len(args):
+		i += 1
 		try:
 			func = switcher[args[i]]
 			retVal = func(i)
-			if isinstance(retVal, str) and retVal == "end_args":
-				break
-			elif isinstance(retVal, dict) and retVal.keys()[0] == "increment":
-				i += retVal['increment']
 		except KeyError:
 			unknown(i)
 		except SystemExit as exitrequest:
 			raise(exitrequest)
-	
+		else:
+			if isinstance(retVal, str) and retVal == "end_args":
+				break
+			elif isinstance(retVal, dict) and "increment" in retVal:
+				i += retVal['increment']
 		
 	## // If-statements to check if interdependent options are satisfied // ##
 	if RELEASE_TYPE is not None:
@@ -228,7 +259,7 @@ def process_args( args ):
 	MODE_QUIET = MODE_QUIET if MODE_QUIET is not None else False	
 
 
-def main():
+def deploy():
 	if MODE_QUIET == True:
 		sys.stdout = open(os.devnull, 'w')
 
@@ -245,7 +276,7 @@ def main():
 			# Add env variables in Powershell?
 			# ext_cmd = [ 
 			# 	'powershell.exe',
-			# 	'{0} ansible-playbook {1}'.format(ENV_VARS,PLAYBOOK_FILE)
+			# 	'{0} ansible-playbook "{1}"'.format(ENV_VARS,PLAYBOOK_FILE)
 			# ]
 			# is_shellcmd = False
 
@@ -359,7 +390,7 @@ def main():
 		# Add env variables in Powershell?
 		# ext_cmd = [ 
 		# 	'powershell.exe',
-		# 	"{0} ansible-playbook {1} {2}".format(ENV_VARS,EXTRA_VARS,DEPLOYMENT_FILE)
+		# 	'{0} ansible-playbook {1} "{2}"'.format(ENV_VARS,EXTRA_VARS,DEPLOYMENT_FILE)
 		# ]
 		# is_shellcmd = False
 
@@ -465,13 +496,19 @@ if __name__ == "__main__":
 
 	NAME="rainfall-predictor"
 
-	process_args(sys.argv)
+	try:
+		process_args(sys.argv)
 
-	if check_prereqs() != 0: 
-		exit(1)
+		if check_prereqs() != 0: 
+			exit(1)
 
-	if not MODE_QUIET:
-		print_banner()
+		if not MODE_QUIET:
+			print_banner()
 
-	keep_awake(main)                    # Run Main Loop
-	exit(0)
+		keep_awake(deploy)
+
+	except KeyboardInterrupt as usr_canx:
+		eprint('\n'+"User interrupted deploy process.  Exiting...")
+		exit(1)	
+	else:
+		exit(0)
