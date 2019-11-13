@@ -21,7 +21,7 @@ import subprocess
 import time
 import datetime
 from pytz import timezone
-from build import build as Builder
+import build as Builder
 from bumpversion import bump
 
 
@@ -333,10 +333,18 @@ def deploy():
 		# ensure build files are up to date
 		print("[VM BUILD] Running code build script...")
 		BUILD_SCRIPT_STARTS = timestamp()
+
+		# Set env vars
+		Builder.MODE_QUIET = MODE_QUIET
+		Builder.DIRNAME = DIRNAME
+		Builder.BUILD_DIR = BUILD_DIR
+		Builder.VERBOSE = False
+		Builder.os_version = os_version
+		Builder.error_count = 0
 		try:
-			# Set env vars??
 			Builder.build()
-		except:
+		except Exception as err:
+			eprint(err)
 			eprint("[VM BUILD] build failed. Aborting..."+'\n')
 			exit(1)
 		else:
