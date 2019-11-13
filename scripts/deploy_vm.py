@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 #
 # FILE: deploy_vm.py
 #=========================================
@@ -15,6 +15,7 @@ import sys, os, platform
 import glob
 import re
 import json
+import copy
 import mmap
 import subprocess
 import time
@@ -127,8 +128,8 @@ def timestamp():
 
 # Process line arguments
 def process_args( argslist ):
-	global MODE_QUIET, DESTROY, AUTOSTART, REBUILD, BUMP_VERSION, RELEASE_TYPE
-	args = argslist.copy()
+	global MODE_QUIET, DESTROY, AUTOSTART, REBUILD, BUMP_VERSION, BUMP_VER_SIZE, RELEASE_TYPE
+	args = copy.copy(argslist)
 
 	# Argument Handlers
 	def request_help(i):
@@ -490,7 +491,13 @@ if __name__ == "__main__":
 	# DEFAULT VARS (accepts environment variables)
 	DIRNAME = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))		# cd ../..
 	BUILD_DIR = "build"
-	MODE_QUIET = False
+	AUTOSTART = None
+	DESTROY = None
+	MODE_QUIET = None
+	REBUILD = None
+	BUMP_VERSION = None
+	BUMP_VER_SIZE = None
+	RELEASE_TYPE = None
 	error_count = 0		# prevent evironment pollution
 	os_version = platform.system()
 
