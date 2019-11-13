@@ -108,7 +108,7 @@ def check_prereqs():
 		# Check for required fields
 		with open(secretsfile, 'rb', 0) as fsecrets, \
 		  mmap.mmap(fsecrets.fileno(), 0, access=mmap.ACCESS_READ) as s:
-			if not re.search(br'^admin_secret: \S+$', s):
+			if not re.search(br'^admin_secret: \S+$', s, re.MULTILINE):
 				missing_prereqs += 1
 				eprint("PREREQ ERROR: secrets.yml file must match syntax 'admin_secret: password' (no quotes).")
 		
@@ -139,7 +139,7 @@ def process_args( argslist ):
 	def set_releasetype(i):
 		global RELEASE_TYPE
 		optarg = args[i+1]
-		if re.search(r'^(major|minor|update)$', optarg, re.RegexFlag.IGNORECASE):
+		if re.search(r'^(major|minor|update)$', optarg, re.IGNORECASE):
 			RELEASE_TYPE = optarg
 			return({ 'increment': 1 })		# hop over optarg
 		else:
@@ -200,7 +200,7 @@ def process_args( argslist ):
 		elif re.search(r'^--[^-]', o):			# double dash option (change to space denoted)
 			switcher.pop(o)
 			switcher[re.sub(r'^(.*)=$', '\\1',o)] = fn
-	opts_w_input_regex = re.compile("^("+'|'.join(opts_w_input)+")(\S+)$")
+	opts_w_input_regex = re.compile(r"^("+'|'.join(opts_w_input)+r")(\S+)$")
 
 	## Massage Args to a normalized state (expand compressedflags, expand = to another index)
 	i_args = 1
