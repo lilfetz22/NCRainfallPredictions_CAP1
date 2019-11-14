@@ -475,7 +475,12 @@ def deploy():
 def keep_awake(caffeinatedFn):
 
 	if os_version == 'Linux':
-		# disable sleep, set TRAP to re-enable sleep capability, execute script
+		## *****************************
+		##  UNTESTED FUNCTIONALITY
+		## *****************************
+		if not debug:
+			raise(Exception("UNTESTED caffeination"))
+
 		targets="sleep.target suspend.target hibernate.target hybrid-sleep.target"
 		energy = subprocess.Popen(
 			'sudo systemctl mask {}'.format(targets),
@@ -516,6 +521,12 @@ def keep_awake(caffeinatedFn):
 		return
 		
 	elif os_version == 'Windows':
+		## *****************************
+		##  UNTESTED FUNCTIONALITY
+		## *****************************
+		if not debug:
+			raise(Exception("UNTESTED caffeination"))
+
 		energy = subprocess.Popen([			# Fork external process
 				'powershell.exe',
 				'"{}" -option System'.format(os.path.join(DIRNAME,'scripts','SuspendPowerPlan.ps1'))		# prevent idle sleep
