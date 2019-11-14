@@ -484,15 +484,16 @@ def keep_awake(caffeinatedFn):
 		# return "$?"
 
 	elif os_version == 'Darwin':
-		pass
-		# $1 &
-		# pid=$!
-		# trap "ps -p $pid > /dev/null && kill $pid" ERR EXIT
-		# caffeinate -i -w $pid
-		# wait $pid
-		# exit_status="$?"
-		# [ $exit_status != 0 ] && exit $exit_status;
-		# return 
+		my_pid = os.getpid()
+		energy = subprocess.Popen(					# Fork external process
+			'caffeinate -i -w {}'.format(my_pid),	# prevent idle sleep
+			shell=True
+		)
+		try:
+			caffeinatedFn()			# run with energy
+		finally:
+			energy.kill()			# kill caffeinate function no matter what
+		return
 		
 	elif os_version == 'Windows':
 		pass
