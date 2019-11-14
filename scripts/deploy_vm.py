@@ -16,10 +16,12 @@ import glob
 import re
 import json
 import copy
+import math
 import mmap
 import subprocess
 import time
 import datetime
+import traceback
 from pytz import timezone
 import build as Builder
 from bumpversion import bump
@@ -388,7 +390,7 @@ def deploy():
   
 	# combine any vars into ansible variable string
 	EXTRA_VARS = "" if not bool(PLAYBOOK_VARS) \
-		            else "--extra-vars {}".format(json.dumps(PLAYBOOK_VARS, separators=(',', ':')))
+		            else "--extra-vars '{}'".format(json.dumps(PLAYBOOK_VARS, separators=(',', ':')))
 
 	# Set to shell environmental variable formatting
 	ENV_VARS = "ANSIBLE_CONFIG={}".format(ANSIBLE_CONFIG)
@@ -421,24 +423,26 @@ def deploy():
 		p = subprocess.Popen(
 			ext_cmd,
 			shell=is_shellcmd,
-			stdout=subprocess.PIPE,
-			stderr=subprocess.STDOUT
 		)
-		for line in p.stdout.readlines():
-			print(line)
-		exit_status = p.wait()
+		maximum_runtime = 60*20  # 20 min
+		try:
+			p.wait(timeout=maximum_runtime)
+		except subprocess.TimeoutExpired as err:
+			p.kill()
+			raise(err)
 
 		## Handle Ansible build status 
-		if exit_status != 0:
+		if p.returncode != 0:
+			eprint("ansible.returncode = {}".format(p.returncode))
 			raise( Exception() )
 
 	except KeyboardInterrupt as usr_canx:
 		raise(usr_canx)
-			# ansiblePID=$!
-			# trap "ps -p $ansiblePID > /dev/null && kill $ansiblePID" ERR EXIT
-			# wait $ansiblePID
-	except:
-		eprint("[VM BUILD] Error occured.  Aborting..."+'\n')
+	except Exception as err:
+		eprint("[DEPLOY VM] ERROR: {}".format(err))
+		if debug: 
+			traceback.print_exception(type(err), err, err.__traceback__)
+		eprint("[DEPLOY VM] Error occured.  Aborting..."+'\n')
 		exit(2)
 	else:
 		ANSIBLE_BUILD_STOPS = timestamp()
@@ -446,7 +450,10 @@ def deploy():
 	print('\n'+"[VM BUILD] GCE VM deployed in {} seconds.".format(ANSIBLE_BUILD_STOPS-ANSIBLE_BUILD_STARTS))
 
 	SCRIPT_STOPS = timestamp()
-	print("[VM BUILD] Total Execution Time: {} seconds".format(SCRIPT_STOPS-SCRIPT_STARTS)+'\n')
+	total_time = SCRIPT_STOPS - SCRIPT_STARTS
+	print("[VM BUILD] Total Execution Time: {0}min, {1}sec".format(
+		math.floor(total_time / 60), round(total_time % 60)
+	)+'\n')
 	# Instructions
 	print("  APP STATUS  ")
 	print(" ------------ ")
