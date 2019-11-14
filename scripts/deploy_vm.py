@@ -475,13 +475,33 @@ def deploy():
 def keep_awake(caffeinatedFn):
 
 	if os_version == 'Linux':
-		pass
 		# disable sleep, set TRAP to re-enable sleep capability, execute script
-		# targets="sleep.target suspend.target hibernate.target hybrid-sleep.target"
-		# sudo systemctl mask $targets
-		# trap "sudo systemctl unmask $targets" ERR EXIT
-		# $1	# run intended script/function
-		# return "$?"
+		targets="sleep.target suspend.target hibernate.target hybrid-sleep.target"
+		energy = subprocess.Popen(
+			'sudo systemctl mask {}'.format(targets),
+			shell=True
+		)
+		try:
+			caffeinatedFn()			# run with energy
+		finally:
+			if energy.poll() is not None:
+				energy.kill()			# likely failed
+
+			remove_energy = subprocess.Popen(
+				'sudo systemctl unmask {}'.format(targets),
+				shell=True
+			)
+			try:
+				remove_energy.wait(timeout=120)
+			except subprocess.TimeoutExpired:
+				remove_energy.kill()
+				eprint("ERROR: (Timeout) Failed to restore system idle sleep targets.")
+				eprint("****************************")
+				eprint("*** USER ACTION REQUIRED ***")
+				eprint("****************************")
+				eprint("Please manually restore (unmask) the following system targets: ")
+				eprint('\t'+'\n\t'.join(re.split(r' ',targets))+'\n')
+		return
 
 	elif os_version == 'Darwin':
 		my_pid = os.getpid()
