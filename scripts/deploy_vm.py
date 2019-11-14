@@ -33,9 +33,10 @@ def eprint(*args, **kwargs):
 def usage(printTo=""):
 	this_file = os.path.basename(os.path.abspath(__file__))
 	printFn = print if printTo == "stdout" else eprint
-	printFn("Usage: ./{0} [-q | --quiet] [--no-autostart] [-r <type> | --release=<type>]".format(this_file))
+	printFn("Usage: ./{0} [-v | --verbose] [--no-autostart] [-r <type> | --release=<type>]".format(this_file))
+	printFn("       ./{0} [-q | --quiet] [--no-autostart] [-r <type> | --release=<type>]".format(this_file))
 	printFn("       ./{0} [-q | --quiet] [--no-rebuild] [--keep-version]".format(this_file))
-	printFn("       ./{0} [--destroy]".format(this_file))
+	printFn("       ./{0} [-v | --verbose] [--destroy]".format(this_file))
 	printFn("       ./{0} [-h | --help]".format(this_file))
 	exit(1)
 
@@ -58,6 +59,7 @@ def help():
     print("Available Options: ")
     print("  -h | --help     Help")
     print("  -q | --quiet    Execute quietly except for errors")
+    print("  -v | --verbose   Show more in-depth log output, unless -q is enabled")
     print("  -r <type> | --release=<type>   Type of release either Major, Minor, or Update")
     print("                     DEFAULT: Minor, update version number only")
     print("  --destroy       Removes a deployed VM and releases GCE resouces")
@@ -68,9 +70,6 @@ def help():
     print("DEFAULT VARS:")
     print("  BUILD_DIR: {}".format(os.path.join(os.path.basename(DIRNAME),BUILD_DIR)))
     print("")
-    # print("ENVIRONMENT VARS:")
-    # print("  DIRNAME, BUILD_DIR, VERBOSE")
-    # print("")
     exit(0)
 
 def print_banner():
@@ -131,6 +130,7 @@ def timestamp():
 # Process line arguments
 def process_args( argslist ):
 	global MODE_QUIET, DESTROY, AUTOSTART, REBUILD, BUMP_VERSION, BUMP_VER_SIZE, RELEASE_TYPE
+	global VERBOSE
 	args = copy.copy(argslist)
 
 	# Argument Handlers
@@ -159,9 +159,9 @@ def process_args( argslist ):
 	def turnoff_v_bump(i):
 		global BUMP_VERSION
 		BUMP_VERSION = False
-	# def set_verbose(i):
-	# 	global VERBOSE
-	# 	VERBOSE = True
+	def set_verbose(i):
+		global VERBOSE
+		VERBOSE = True
 	def end_args(i):
 		return("end_args")
 	def unknown(i):
@@ -173,14 +173,14 @@ def process_args( argslist ):
 		'--help'    : request_help,
 		'-q'        : set_quiet,
 		'--quiet'   : set_quiet,
+		'-v'        : set_verbose,
+		'--verbose' : set_verbose,
 		'-r='		: set_releasetype,
 		'--release=': set_releasetype,
 		'--destroy' : toggleDestroy,
 		'--no-autostart' : turnoff_autostart,
 		'--no-rebuild'   : turnoff_rebuild,
 		'--keep-version' : turnoff_v_bump,
-		# '-v'        : set_verbose,
-		# '--verbose' : set_verbose,
 		'--' : 		  end_args
 	}
 
@@ -259,7 +259,8 @@ def process_args( argslist ):
 	REBUILD = REBUILD if REBUILD is not None else True
 	BUMP_VERSION = BUMP_VERSION if BUMP_VERSION is not None else True
 	BUMP_VER_SIZE = BUMP_VER_SIZE if BUMP_VER_SIZE is not None else "minor"
-	MODE_QUIET = MODE_QUIET if MODE_QUIET is not None else False	
+	MODE_QUIET = MODE_QUIET if MODE_QUIET is not None else False
+	VERBOSE = VERBOSE if VERBOSE is not None else False	
 
 
 def deploy():
@@ -345,7 +346,7 @@ def deploy():
 		Builder.MODE_QUIET = MODE_QUIET
 		Builder.DIRNAME = DIRNAME
 		Builder.BUILD_DIR = BUILD_DIR
-		Builder.VERBOSE = False
+		Builder.VERBOSE = VERBOSE
 		Builder.os_version = os_version
 		Builder.error_count = 0
 		try:
@@ -518,6 +519,7 @@ if __name__ == "__main__":
 	BUMP_VERSION = None
 	BUMP_VER_SIZE = None
 	RELEASE_TYPE = None
+	VERBOSE = None
 	error_count = 0		# prevent evironment pollution
 	os_version = platform.system()
 
