@@ -300,28 +300,33 @@ def deploy():
 			p = subprocess.Popen(
 				ext_cmd,
 				shell=is_shellcmd,
-				stdout=subprocess.PIPE,
-				stderr=subprocess.STDOUT
 			)
-			for line in p.stdout.readlines():
-				print(line)
-			exit_status = p.wait()
+			maximum_runtime = 60*5  # 5 min
+			try:
+				p.wait(timeout=maximum_runtime)
+			except subprocess.TimeoutExpired as err:
+				p.kill()
+				raise(err)
 
 			## Handle Ansible build status 
-			if exit_status != 0:
+			if p.returncode != 0:
+				eprint("ansible.returncode = {}".format(p.returncode))
 				raise( Exception() )
 
 		except KeyboardInterrupt as usr_canx:
 			raise(usr_canx)
-			# ansiblePID=$!
-			# trap "ps -p $ansiblePID > /dev/null && kill $ansiblePID" ERR EXIT
-			# wait $ansiblePID
-		except:
+		except Exception as err:
+			eprint("[VM DESTROY] ERROR: {}".format(err))
+			if debug: 
+				traceback.print_exception(type(err), err, err.__traceback__)
 			eprint("[VM DESTROY] Error occured.  Aborting..."+'\n')
 			exit(1)
 		else:
 			SCRIPT_STOPS = timestamp()
-			print("[VM DESTROY] Total Execution Time: {} seconds".format(SCRIPT_STOPS-SCRIPT_STARTS)+'\n')
+			total_time = SCRIPT_STOPS - SCRIPT_STARTS
+			print("[VM DESTROY] Total Execution Time: {0}min, {1}sec".format(
+				math.floor(total_time / 60), round(total_time % 60,0)
+			)+'\n')
 			print("Google Cloud Resources Summary: ")
 			print("------------------------------- ")
 			print("   Compute Instance: RELEASED")
@@ -516,6 +521,7 @@ if __name__ == "__main__":
 	error_count = 0		# prevent evironment pollution
 	os_version = platform.system()
 
+	debug = False
 	NAME="rainfall-predictor"
 
 	try:
