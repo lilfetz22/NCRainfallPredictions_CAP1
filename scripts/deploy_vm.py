@@ -516,7 +516,17 @@ def keep_awake(caffeinatedFn):
 		return
 		
 	elif os_version == 'Windows':
-		pass
+		energy = subprocess.Popen([			# Fork external process
+				'powershell.exe',
+				'"{}" -option System'.format(os.path.join(DIRNAME,'scripts','SuspendPowerPlan.ps1'))		# prevent idle sleep
+			],	
+			shell=False
+		)
+		try:
+			caffeinatedFn()			# run with energy
+		finally:
+			energy.kill()			# kill caffeinate function no matter what
+		return
 		
 	else:
 		pass	# Unknown
