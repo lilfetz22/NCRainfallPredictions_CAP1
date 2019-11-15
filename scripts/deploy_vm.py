@@ -83,8 +83,15 @@ def check_prereqs():
 	missing_prereqs = 0
 	prereqs = []
 	if os_version == 'Windows':
+		## *****************************
+		##  UNTESTED FUNCTIONALITY
+		## *****************************
+		cygwin_bash = os.path.join(os.path.abspath(os.sep),'cygwin64','bin',"bash.exe")
 		prereqs = [
-			{ 'test' : ["powershell.exe", "Get-Command ansible 2>&1 | out-null"], 'isshell':False, 'onerror': "ansible is not installed but is required." }
+			{ 'test' : ['powershell.exe', '[System.IO.File]::Exists({}) 2>&1 | out-null'.format(cygwin_bash)], 'isshell':False, 'onerror':"cygwin64's bash.exe is not installed but is required." },
+			{ 'test' : [cygwin_bash, '-c', ". $HOME/.bashrc && command -v ls"], 'isshell':False, 'onerror': "cygwin's $PATH variable not configured. Check C:\cygwin64\home\<user>\.bashrc" },
+			{ 'test' : [cygwin_bash, '-c', ". $HOME/.bashrc && command -v ansible"], 'isshell':False, 'onerror': "ansible is not installed but is required." }
+			# { 'test' : ['powershell.exe', 'Unblock-File -Path {} -WhatIf'.format(os.path.join(DIRNAME,'scripts','SuspendPowerPlan.ps1'))], 'isshell':False, 'onerror': "WARNING: Unable to suspend power plan.\nLong running deploy may fail.\n\n FIX: Unblock SuspendPowerPlan.ps1 in PowerShell.exe."}
 		]
 	elif os_version == 'Linux' or os_version == 'Darwin':
 		prereqs = [
@@ -275,14 +282,25 @@ def deploy():
 		ENV_VARS = "ANSIBLE_CONFIG={}".format(ANSIBLE_CONFIG)
 
 		if os_version == 'Windows':
-			eprint("Windows is not yet supported")
-			raise(Exception())
-			# Add env variables in Powershell?
-			# ext_cmd = [ 
-			# 	'powershell.exe',
-			# 	'{0} ansible-playbook "{1}"'.format(ENV_VARS,PLAYBOOK_FILE)
-			# ]
-			# is_shellcmd = False
+			if not debug:
+				eprint("Windows is not yet supported")
+				raise(Exception())
+			## *****************************
+			##  UNTESTED FUNCTIONALITY
+			## *****************************
+			ext_cmd = [ 
+				'C:\cygwin64\bin\bash.exe', '-c'
+				'. $HOME/.bashrc && '								# load bash configuration
+			   +'{env} ansible-playbook "{playbook}"'.format(
+					env = ENV_VARS,
+					playbook = re.sub(						# Find playbook at cygwin special mount location 
+						r'^C:(.*)$',
+						r'/cygwin/c/\\1', 
+						'/'.join(re.split(r'\\',PLAYBOOK_FILE))		# switch back to POSIX paths for bash.exe
+					)
+				)
+			]
+			is_shellcmd = False
 
 		elif os_version == 'Linux' or os_version == 'Darwin':
 			# /bin/bash -c "$ENV_VARS ansible-playbook $DIRNAME/scripts/ansible/cleanup.yml" &
@@ -402,14 +420,27 @@ def deploy():
 	ENV_VARS = "ANSIBLE_CONFIG={}".format(ANSIBLE_CONFIG)
 
 	if os_version == 'Windows':
-		eprint("Windows is not yet supported")
-		raise(Exception())
+		if not debug:
+			eprint("Windows is not yet supported")
+			raise(Exception())
+		## *****************************
+		##  UNTESTED FUNCTIONALITY
+		## *****************************
 		# Add env variables in Powershell?
-		# ext_cmd = [ 
-		# 	'powershell.exe',
-		# 	'{0} ansible-playbook {1} "{2}"'.format(ENV_VARS,EXTRA_VARS,DEPLOYMENT_FILE)
-		# ]
-		# is_shellcmd = False
+		ext_cmd = [ 
+			'C:\cygwin64\bin\bash.exe', '-c'
+			'. $HOME/.bashrc && '								# load bash configuration
+		   +'{env} ansible-playbook {extrav} "{playbook}"'.format(
+				env = ENV_VARS,
+				extrav = EXTRA_VARS,
+				playbook = re.sub(						# Find playbook at cygwin special mount location 
+					r'^C:(.*)$',
+					r'/cygwin/c/\\1', 
+					'/'.join(re.split(r'\\',DEPLOYMENT_FILE))		# switch back to POSIX paths for bash.exe
+				)
+			)
+		]
+		is_shellcmd = False
 
 	elif os_version == 'Linux' or os_version == 'Darwin':
 		# /bin/bash -c "$ENV_VARS ansible-playbook $EXTRA_VARS $DIRNAME/scripts/ansible/deploy-app-vm.yml" &
@@ -527,10 +558,14 @@ def keep_awake(caffeinatedFn):
 		if not debug:
 			raise(Exception("UNTESTED caffeination"))
 
-		energy = subprocess.Popen([			# Fork external process
+		# startupinfo = subprocess.STARTUPINFO()
+		# startupinfo.dwFlags |= subprocess.STARTIF_USESHOWWINDOW		# Hide process window
+		energy = subprocess.Popen([			# Fork external process to prevent idle sleep
 				'powershell.exe',
-				'"{}" -option System'.format(os.path.join(DIRNAME,'scripts','SuspendPowerPlan.ps1'))		# prevent idle sleep
-			],	
+				'. "{script}"'.format(script=os.path.join(DIRNAME,'scripts','SuspendPowerPlan.ps1'))	# install cmdlet		
+				+ '; Suspend-Powerplan -VERBOSE -option System'			# Run cmdlet
+			],
+			# startupinfo=startupinfo,
 			shell=False
 		)
 		try:

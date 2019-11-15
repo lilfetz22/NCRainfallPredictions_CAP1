@@ -19,6 +19,8 @@
 .EXAMPLE
    Suspend-PowerPlan -option System
    Start infinitely running script that prevents sleep idle timeout while running
+   Suspend-PowerPlan -Verbose
+   Start script with verbose output.  Optionally add an option command as well
 #>
 function Suspend-Powerplan
 {
@@ -28,9 +30,6 @@ function Suspend-Powerplan
    Param
    (
         # Param1 help description
-        [Parameter(Mandatory=$true,
-                   Position=0)]
-        $script,
         [ValidateSet("Away","Display","System")]
         [string]$option
          
@@ -60,7 +59,7 @@ function Suspend-Powerplan
 
    try
    {
-      Write-Verbose "Exercising forever..."
+      # Write-Verbose "Exercising forever..."
       while(1) {
          start-sleep -seconds 600
       }
@@ -73,4 +72,3 @@ function Suspend-Powerplan
    }
 
 }
-
