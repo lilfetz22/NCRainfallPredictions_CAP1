@@ -48,7 +48,7 @@ A simple build can be accomplished cross-platform by running the following pytho
 
 
 
-## DEPLOY APPLICATION (LINUX ONLY)
+## DEPLOY APPLICATION (LINUX USERS)
 
 If you want to deploy straight to Google Compute Engine, Run:
 
@@ -64,10 +64,48 @@ If you want to deploy straight to Google Compute Engine, Run:
 4. Set Administrator password in the file `./scripts/ansible/roles/configure/vars/secrets.yml`
 5. `./scripts/build.py` available
 
-## RECALL APPLICATION (LINUX ONLY)
+## RECALL APPLICATION (LINUX USERS)
 To tear down and release all GCE resources, Run:
 
 `$> python ./scripts/deploy_vm.py --destroy`
+
+This will release all resources except the persistent disk allocation.  Once all resources are released, Google Cloud billing will cease. 
+
+----
+
+## DEPLOY APPLICATION (WINDOWS USERS)
+
+If you want to deploy straight to Google Compute Engine, Open Powershell & run:
+
+`PS C:\> python ./scripts/deploy_vm.py`
+
+`--help` option will describe how to use the script.
+
+### PREREQUISTS:
+
+1. Conda environment enabled therefore Jupyter available on $env:Path
+2. Configure `./scripts/ansible/gce_vars/auth` parameters using a service account *.json
+3. Configure `./scripts/ansible/group_vars/all` paremeters with ssh account key to service account.
+4. Set Administrator password in the file `./scripts/ansible/roles/configure/vars/secrets.yml`
+5. `./scripts/build.py` available
+6. Make sure you have attempted a build with the above instructions to ensure your PowerShell environment is ready.
+7. Run the following command to tell Windows to trust the internal script without prompt.  This is required to allow the deployment script to run uninterrupted by idle mode.  Sleep functionalty will be re-enabled by the end of the deployment script.
+
+    `PS C:\> Unblock-File -Path ./scripts/SuspendPowerPlan.ps1`
+
+8. Install ansible in a cygwin environment
+
+    **TO INSTALL Ansible on Windows Cygwin Environment**
+
+    1. Follow the instructions @ http://www.oznetnerd.com/installing-ansible-windows/
+    2. Make sure to use the same installation location of `C:\cygwin64\` so the deploy script will be able to find the application
+    2. Make sure to install the dependencies that ansible requires and install ansible using pip
+    3. Restart the cygwin application and verify `command -v ansible; [ $? == 0 ] && echo installed || echo "ansible: Not Found"`
+
+## RECALL APPLICATION (WINDOWS USERS)
+To tear down and release all GCE resources, Run in PowerShell:
+
+`PS C:\> python ./scripts/deploy_vm.py --destroy`
 
 This will release all resources except the persistent disk allocation.  Once all resources are released, Google Cloud billing will cease. 
 
