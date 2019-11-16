@@ -20,31 +20,35 @@ A simple build can be accomplished cross-platform by running the following pytho
 
         3. If a profile does not exist, run the following to create one.  This will generate a file at `C:\Users\<user>\Documents\WindowsPowerShell\Microsoft.PowerShell_profile.ps1`
 
-            `New-Item -path $profile -type file –force`
+            `PS C:\> New-Item -path $profile -type file –force`
 
         4. Anaconda installation adds a profile.ps1 file to your `C:\Users\<user>\Documents\WindowsPowerShell\` directory.  In order to enable PowerShell to use this profile, you need to add a command to also load conda's profile.ps1 into your Microsoft.PowerShell_profile.ps1 file.  To do this, Open the default profile with a Text Editor like Notepad.exe.
 
-        `PS C:\> notepad.exe C:\Users\<user>\Documents\WindowsPowerShell\Microsoft.PowerShell_profile.ps1`
+            `PS C:\> notepad.exe C:\Users\<user>\Documents\WindowsPowerShell\Microsoft.PowerShell_profile.ps1`
 
-        Add the following to the default profile:
+            Add the following to the default profile:
 
-        `. .\profile.ps1`
+            `. $HOME\Documents\WindowsPowerShell\profile.ps1`
 
-        This will dot-source the conda controlled profile file into your normal environment so that it will automatically load when PowerShell is loaded.  Save and exit the editor.
+            This will dot-source the conda controlled profile file into your normal environment so that it will automatically load when PowerShell is loaded.  Save and exit the editor.
 
-        5. To reload your new modified profile without restarting PowerShell:
+        5. Tell Windows to trust your new PowerShell profile & Conda's activation script
 
-        `PS C:\> & $profile`
+            `PS C:\> Unblock-File -Path $home\Documents\WindowsPowerShell\Microsoft.PowerShell_profile.ps1`
+            `PS C:\> Unblock-File -Path $home\Documents\WindowsPowerShell\profile.ps1`
 
-           **If you receive a Scripts Execution Permissions Error,**
-       you will have to run the following command first to enable any scripts to run.  This can be a security concern so once you are finished running scripts, you should reverse the command to an execution policy of 'Restricted'
+        6. To enable scripts to be run in PowerShell you will need to enable them with the following command.  Windows blocks script execution by default.  This is sometimes considered a security concern so once you are finished running scripts, you should reverse the command to an execution policy of 'Restricted'
 
-           `PS C:\> Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy Unrestricted`
+            `PS C:\> Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned`
 
-        6. Now, you should see '(base)' in front of your command prompt which indicates you are in the base conda environment.  Additionally to verify that jupyter is available, run the following command:
+        7. To reload your new modified profile without restarting PowerShell:
 
-        `(base) PS C:\> Get-Command jupyter`
-        `(base) PS C:\> python --version`
+            `PS C:\> & $profile`
+
+        8. Now, you should see '(base)' in front of your command prompt which indicates you are in the base conda environment.  Additionally to verify that jupyter is available, run the following command:
+
+            `(base) PS C:\> Get-Command jupyter`
+            `(base) PS C:\> python --version`
 
 
 

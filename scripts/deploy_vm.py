@@ -542,7 +542,7 @@ def keep_awake(caffeinatedFn):
 	elif os_version == 'Darwin':
 		my_pid = os.getpid()
 		energy = subprocess.Popen(					# Fork external process
-			'caffeinate -i -w {}'.format(my_pid),	# prevent idle sleep
+			'caffeinate -i -w {pid}'.format(pid=my_pid),	# prevent idle sleep
 			shell=True
 		)
 		try:
