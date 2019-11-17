@@ -255,17 +255,28 @@ def __runcygcmd(cygcmd=""):
 def install_utilities():
 	print("Installing Utilities...")
 	utilities = [
-		'dos2unix'
+		{ 'pkg':'dos2unix', 'prompt':True,'prompt_text':"Has the installation completed yet (Y/n)?" }
 	]
+	proceedregex = regex(r'^(y|yes|Y|YES)$')
 
 	for utility in utilities:
-		print("Installing {}...".format(utility))
+		print("Installing {}...".format(utility['pkg']))
 		try:
-			exitcode = __runcygcmd("/cyg-get/setup-x86_64.exe -q -P {}".format(utility))
+			exitcode = __runcygcmd("/cyg-get/setup-x86_64.exe -q -P {}".format(utility['pkg']))
 			if exitcode != 0:
-				raise( Exception("Utility '{}' returned a failed exit status".format(utility)) )
-			else:
+				raise( Exception("Utility '{}' returned a failed exit status ({})".format(utility['pkg'], exitcode)) )
+			elif 'prompt' in utility and utility['prompt']:
+				sleep(30)
+				while True:
+					answer = input(utility['prompt_text']+' ')
+					if proceedregex.match(answer):
+						break			# break from user input loop & waiting loop
+					else:
+						print('zzz...')
+						sleep(20)
 				continue
+			else:
+				continue		# proceed to next utility
 		except Exception as err:
 			eprint(err)
 			raise(err)
