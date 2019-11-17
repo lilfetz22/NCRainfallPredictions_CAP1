@@ -35,6 +35,7 @@ A simple build can be accomplished cross-platform by running the following pytho
         5. Tell Windows to trust your new PowerShell profile & Conda's activation script
 
             `PS C:\> Unblock-File -Path $home\Documents\WindowsPowerShell\Microsoft.PowerShell_profile.ps1`
+
             `PS C:\> Unblock-File -Path $home\Documents\WindowsPowerShell\profile.ps1`
 
         6. To enable scripts to be run in PowerShell you will need to enable them with the following command.  Windows blocks script execution by default.  This is sometimes considered a security concern so once you are finished running scripts, you should reverse the command to an execution policy of 'Restricted'
@@ -48,6 +49,7 @@ A simple build can be accomplished cross-platform by running the following pytho
         8. Now, you should see '(base)' in front of your command prompt which indicates you are in the base conda environment.  Additionally to verify that jupyter is available, run the following command:
 
             `(base) PS C:\> Get-Command jupyter`
+
             `(base) PS C:\> python --version`
 
 
@@ -102,9 +104,45 @@ If you want to deploy straight to Google Compute Engine, Open Powershell & run:
     **TO INSTALL Ansible on Windows Cygwin Environment**
 
     1. Follow the instructions @ http://www.oznetnerd.com/installing-ansible-windows/
-    2. Make sure to use the same installation location of `C:\cygwin64\` so the deploy script will be able to find the application
-    2. Make sure to install the dependencies that ansible requires and install ansible using pip
-    3. Restart the cygwin application and verify `command -v ansible; [ $? == 0 ] && echo installed || echo "ansible: Not Found"`
+    2. Make sure to use the same installation location of `C:\cygwin64\` so the deploy script will be able to find the application. I also placed the package installer into the directory `C:\cygwin64\cyg-get`
+    2. Make sure to install the dependencies that ansible requires using the package manager (setup-x86_64.exe). Search for package and then double click on the word 'skip' to toggle selection.  Press Next, and it will install all items with the indicated version.  The packages are:
+
+        - cygwin32-gcc-g++ 
+        - gcc-core 
+        - gcc-g++ 
+        - git 
+        - libffi-devel 
+        - nano
+        - python2 
+        - python2-devel 
+        - python27-crypto 
+        - python27-openssl 
+        - python27-pip 
+        - python27-setuptools 
+        - tree
+
+    3. Once installation has completed, double-click the cygwin terminal shortcut from the desktop (MUST DO ON FIRST EXECUTION for proper configuration).  Then, try to install ansible using pip2.
+
+        `$ pip2 install ansible`
+
+        **If you get pip2 not found error** Your cygwin installation failed to configure your path variable on startup.  You will have to make your home files manually by copying each file from `/etc/skel/*` to `/home/<username>`.  Then source your newly copied `.profile` file using `source /home/<username>/.profile`.  This will enable the normal UNIX $PATH variable with all your '/bin' & etc. applications.  Once fixed re-attempt pip2 install command.
+
+    4. Configure your `/home/<username>/.bash_profile` to load proper $PATH variable on startup.  
+
+        `$ nano /home/<username>/.bash_profile`
+
+        In the editor, scroll down to after the loading of `.bashrc` and add the following line (Copy this directly, failure might require re-installation).  Save and close.
+
+        `PATH="/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:${PATH}"`
+
+    4. Quit out of cygwin and open PowerShell to test your setup with the following:
+    
+        `PS C:\> C:\cygwin64\bin\bash.exe -c "source $HOME/.bash_profile && command -v ansible"`
+
+        Desired Output: `/usr/bin/ansible`
+
+        **The output of nothing is a problem!** Check your installation steps.
+
 
 ## RECALL APPLICATION (WINDOWS USERS)
 To tear down and release all GCE resources, Run in PowerShell:

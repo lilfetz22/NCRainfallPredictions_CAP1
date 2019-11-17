@@ -88,10 +88,9 @@ def check_prereqs():
 		## *****************************
 		cygwin_bash = os.path.join(os.path.abspath(os.sep),'cygwin64','bin',"bash.exe")
 		prereqs = [
-			{ 'test' : ['powershell.exe', '[System.IO.File]::Exists({}) 2>&1 | out-null'.format(cygwin_bash)], 'isshell':False, 'onerror':"cygwin64's bash.exe is not installed but is required." },
-			{ 'test' : [cygwin_bash, '-c', ". $HOME/.bashrc && command -v ls"], 'isshell':False, 'onerror': "cygwin's $PATH variable not configured. Check C:\cygwin64\home\<user>\.bashrc" },
-			{ 'test' : [cygwin_bash, '-c', ". $HOME/.bashrc && command -v ansible"], 'isshell':False, 'onerror': "ansible is not installed but is required." }
-			# { 'test' : ['powershell.exe', 'Unblock-File -Path {} -WhatIf'.format(os.path.join(DIRNAME,'scripts','SuspendPowerPlan.ps1'))], 'isshell':False, 'onerror': "WARNING: Unable to suspend power plan.\nLong running deploy may fail.\n\n FIX: Unblock SuspendPowerPlan.ps1 in PowerShell.exe."}
+			{ 'test' : ['powershell.exe', 'if (-not ([System.IO.File]::Exists("{0}"))) { throw "Error" }'.format(cygwin_bash)], 'isshell':False, 'onerror':"\ncygwin64's bash.exe is not installed but is required." },
+			{ 'test' : [cygwin_bash, '-c', ". $HOME/.bash_profile && command -v ls"], 'isshell':False, 'onerror': "cygwin's $PATH variable not configured. Check C:\cygwin64\home\<user>\.bash_profile" },
+			{ 'test' : [cygwin_bash, '-c', ". $HOME/.bash_profile && command -v ansible"], 'isshell':False, 'onerror': "ansible is not installed but is required." }
 		]
 	elif os_version == 'Linux' or os_version == 'Darwin':
 		prereqs = [
@@ -290,7 +289,7 @@ def deploy():
 			## *****************************
 			ext_cmd = [ 
 				'C:\cygwin64\bin\bash.exe', '-c'
-				'. $HOME/.bashrc && '								# load bash configuration
+				'. $HOME/.bash_profile && '								# load bash configuration
 			   +'{env} ansible-playbook "{playbook}"'.format(
 					env = ENV_VARS,
 					playbook = re.sub(						# Find playbook at cygwin special mount location 
@@ -429,7 +428,7 @@ def deploy():
 		# Add env variables in Powershell?
 		ext_cmd = [ 
 			'C:\cygwin64\bin\bash.exe', '-c'
-			'. $HOME/.bashrc && '								# load bash configuration
+			'. $HOME/.bash_profile && '								# load bash configuration
 		   +'{env} ansible-playbook {extrav} "{playbook}"'.format(
 				env = ENV_VARS,
 				extrav = EXTRA_VARS,
