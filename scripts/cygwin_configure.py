@@ -51,6 +51,7 @@ def process_args( args ):
 	switcher = {
 		'-h' :        request_help,
 		'--help' :    request_help,
+		'/h' :		  request_help,
 		'--' : 		  end_args
 	}
 
@@ -297,17 +298,17 @@ def __install_ansible_dep():
 
 	for d in range(len(dependencies)):
 		dep = dependencies[d]
-		print("Dependency {i} of {total}".format(i=d+1,total=len(dependencies)))
+		print("Dependency {i} of {total} ({pkg})".format(i=d+1,total=len(dependencies),pkg=dep))
 		try:
 			exitcode = __runcygcmd("/cyg-get/setup-x86_64.exe -q -P {}".format(dep))
 			if exitcode != 0:
-				raise( Exception("Dependency '{}' returned a failed exit status".format(dep)) )
+				raise( Exception("Dependency '{}' returned a failed exit status ({})".format(dep, exitcode)) )
 			elif pipfinder.match(dep):
 				# add pip pointer
 				if __runcygcmd("ln -s /usr/bin/pip3 /usr/bin/pip") != 0:
 					raise( Exception("Failed to add pip symbolic link") )
 			else:
-				sleep(30)  # wait for installation of previous package
+				sleep(60)  # wait for installation of previous package
 				continue
 		except Exception as err:
 			eprint(err)
@@ -379,6 +380,9 @@ if __name__ == "__main__":
 		except subprocess.CalledProcessError:
 			eprint("MISSING PREREQ: cygwin not found @ {}/".format(p.join(p.abspath(ossep),'cygwin64')))
 			exit(-2)
+		except KeyboardInterrupt as usr_canx:
+			eprint('\n'+"User interrupted configuration process.  Exiting...")
+			exit(1)
 
 	# VALID Environment
 	print("PASS")
@@ -392,6 +396,9 @@ if __name__ == "__main__":
 	for action in config_actions:
 		try:
 			action['fn']()
+		except KeyboardInterrupt as usr_canx:
+			eprint('\n'+"User interrupted configuration process.  Exiting...")
+			exit(1)
 		except:
 			eprint( action['onerror'] )
 			exit(1)
