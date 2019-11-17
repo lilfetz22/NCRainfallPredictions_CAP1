@@ -4,6 +4,8 @@ CapstoneProject1 supports Windows 10, MacOS X, and Linux application compiling a
 
 Due to the fact, the Ansible controller does not support the Windows platform, these instructions will facilitate the installation of cygwin, a linux environment compiled for Windows.
 
+For simplicity, the instructions will define the variable `$proj = <project_root_dir>` so all filepaths that use `$proj/` are a symbolic path from the main project's root directory.
+
 ----
 
 ## BUILD
@@ -12,7 +14,7 @@ Due to the fact, the Ansible controller does not support the Windows platform, t
   <summary>A simple build can be accomplished cross-platform by running the following python script:</summary>
 
 ```bash
-$> python ./scripts/build.py
+$> python $proj/scripts/build.py
 ```
 
 `--help` options will describe how to use the features in the script.
@@ -44,7 +46,7 @@ $> python ./scripts/build.py
         4. Anaconda installation adds a profile.ps1 file to your `C:\Users\<user>\Documents\WindowsPowerShell\` directory.  In order to enable PowerShell to use this profile, you need to add a command to also load conda's profile.ps1 into your Microsoft.PowerShell_profile.ps1 file.  To do this, Open the default profile with a Text Editor like Notepad.exe.
 
             ```powershell
-            PS C:\> notepad.exe C:\Users\<user>\Documents\WindowsPowerShell\Microsoft.PowerShell_profile.ps1
+            PS C:\> notepad.exe $HOME\Documents\WindowsPowerShell\Microsoft.PowerShell_profile.ps1
             ```
 
             Add the following to the default profile:
@@ -58,8 +60,8 @@ $> python ./scripts/build.py
         5. Tell Windows to trust your new PowerShell profile & Conda's activation script
 
             ```powershell
-            PS C:\> Unblock-File -Path $home\Documents\WindowsPowerShell\Microsoft.PowerShell_profile.ps1
-            PS C:\> Unblock-File -Path $home\Documents\WindowsPowerShell\profile.ps1
+            PS C:\> Unblock-File -Path $HOME\Documents\WindowsPowerShell\Microsoft.PowerShell_profile.ps1
+            PS C:\> Unblock-File -Path $HOME\Documents\WindowsPowerShell\profile.ps1
             ```
 
         6. To enable scripts to be run in PowerShell you will need to enable them with the following command.  Windows blocks script execution by default.  This is sometimes considered a security concern so once you are finished running scripts, you should reverse the command to an execution policy of 'Restricted'
@@ -71,7 +73,7 @@ $> python ./scripts/build.py
         7. To reload your new modified profile without restarting PowerShell:
 
             ```powershell
-            PS C:\> & $profile
+            PS C:\> & $PROFILE
             ```
 
         8. Now, you should see '(base)' in front of your command prompt which indicates you are in the base conda environment.  Additionally to verify that jupyter is available, run the following command:
@@ -96,10 +98,10 @@ $> python ./scripts/build.py
   <summary>If you want to deploy straight to Google Compute Engine, Run in Bash/PowerShell:</summary>
 
 ```bash
-$> python ./scripts/deploy_vm.py
+$> python $proj/scripts/deploy_vm.py
 ```
 ```powershell
-PS C:\> python ./scripts/deploy_vm.py
+PS C:\> python $proj/scripts/deploy_vm.py
 ```
 
 `--help` option will describe how to use the script.
@@ -112,25 +114,25 @@ PS C:\> python ./scripts/deploy_vm.py
   <summary>MacOSX or Linux</summary>
 
     1. Ansible & Jupyter installed on $PATH
-    2. Configure `./scripts/ansible/gce_vars/auth` parameters using a service account *.json
-    3. Configure `./scripts/ansible/group_vars/all` paremeters with ssh account key to service account.
-    4. Set Administrator password in the file `./scripts/ansible/roles/configure/vars/secrets.yml`
-    5. `./scripts/build.py` available
+    2. Configure `$proj/scripts/ansible/gce_vars/auth` parameters using a service account *.json
+    3. Configure `$proj/scripts/ansible/group_vars/all` paremeters with ssh account key to service account.
+    4. Set Administrator password in the file `$proj/scripts/ansible/roles/configure/vars/secrets.yml`
+    5. `$proj/scripts/build.py` available
   </details>
 
 - <details>
   <summary>Windows</summary>
 
     1. Conda environment enabled therefore Jupyter available on $env:Path
-    2. Configure `./scripts/ansible/gce_vars/auth` parameters using a service account *.json
-    3. Configure `./scripts/ansible/group_vars/all` paremeters with ssh account key to service account.
-    4. Set Administrator password in the file `./scripts/ansible/roles/configure/vars/secrets.yml`
-    5. `./scripts/build.py` available
+    2. Configure `$proj/scripts/ansible/gce_vars/auth` parameters using a service account *.json
+    3. Configure `$proj/scripts/ansible/group_vars/all` paremeters with ssh account key to service account.
+    4. Set Administrator password in the file `$proj/scripts/ansible/roles/configure/vars/secrets.yml`
+    5. `$proj/scripts/build.py` available
     6. Make sure you have attempted a build with the above instructions to ensure your PowerShell environment is ready.
     7. Run the following command to tell Windows to trust the internal script without prompt.  This is required to allow the deployment script to run uninterrupted by idle mode.  Sleep functionalty will be re-enabled by the end of the deployment script.
 
         ```powershell
-        PS C:\> Unblock-File -Path ./scripts/SuspendPowerPlan.ps1
+        PS C:\> Unblock-File -Path $proj/scripts/SuspendPowerPlan.ps1
         ```
 
     8. Install ansible in a cygwin environment
@@ -186,10 +188,10 @@ PS C:\> python ./scripts/deploy_vm.py
   <summary>To tear down and release all GCE resources, Run in Bash/Powershell:</summary>
 
 ```bash
-$> python ./scripts/deploy_vm.py --destroy
+$> python $proj/scripts/deploy_vm.py --destroy
 ```
 ```powershell
-PS C:\> python ./scripts/deploy_vm.py --destroy
+PS C:\> python $proj/scripts/deploy_vm.py --destroy
 ```
 
 This will release all resources except the persistent disk allocation.  Once all resources are released, Google Cloud billing will cease. 
@@ -201,7 +203,6 @@ This will release all resources except the persistent disk allocation.  Once all
 <details>
   <summary>NOTES</summary>
 
-1. All filepaths that use `./` above are a relative path from the main project's root directory.
 2. Check your $env:Path variable in PowerShell, it should have:
 3. Check your $PATH variable in cygwin, it should have:
 
