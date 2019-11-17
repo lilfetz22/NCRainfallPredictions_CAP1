@@ -1,3 +1,11 @@
+# DevOps Scripts
+
+CapstoneProject1 supports Windows 10, MacOS X, and Linux application compiling and deployment utilizing python3.  Below you will find the commands to build and deploy the application, please make sure to follow all steps especially the Windows-specific configurations.  If you have any problems, please submit a detailed issue report after you have attempted these instructions more than once.
+
+Due to the fact, the Ansible controller does not support the Windows platform, these instructions will facilitate the installation of cygwin, a linux environment compiled for Windows.
+
+----
+
 ## Build
 A simple build can be accomplished cross-platform by running the following python script:
 
@@ -52,7 +60,7 @@ A simple build can be accomplished cross-platform by running the following pytho
 
             `(base) PS C:\> python --version`
 
-
+----
 
 ## DEPLOY APPLICATION (LINUX USERS)
 
@@ -107,20 +115,20 @@ If you want to deploy straight to Google Compute Engine, Open Powershell & run:
     2. Move the downloaded setup file to `C:\cygwin64\cyg-get\`
     3. Run the Cygwin installation file.
     4. When asked which download source you’d like to use, select “Install from Internet”.
-    5. When asked for installation location, set it to, `C:\cygwin64`. This is required for the configuration and deploy script to find cygwin.
+    5. When asked for installation location, set it to, `C:\cygwin64`. **This is required for the cygwin_configure.py and deploy_vm.py scripts to find Cygwin.**
     6. When asked where to install Cygwin packages, set it to `C:\cygwin64\cyg-get\`.
     7. Select the method which suits your internet connection type. e.g If you’re not connecting from behind a proxy, select the “Direct Connection” option.
     8. Select a mirror to download your packages from. Any option in the list will do, I choose an USA host usually *.edu.
     9. You’ll then be provided with a list of packages which you can download. Don’t select anything, just click “Next”. Doing so will result in the default applications being installed.
     10. When asking if you want to install dependencies, leave everything as their defaults and click “Next”. This will install everything you need to get Cygwin up and running.
     11. Once installation has completed, double-click the "Cygwin64 Terminal" shortcut from the desktop (MUST DO ON FIRST EXECUTION for proper configuration).  You won't need it for the rest of these instructions after the initial open.
-    12. Close the cygwin terminal and open PowerShell to run the python configuration script
+    12. Close the cygwin terminal and open PowerShell to run the cygwin_configure.py configuration script
 
         `PS C:\> python <project_dir>\scripts\cygwin_configure.py`
 
-    13. Upon completion with no errors, you can now use ansible through cygwin.
+    13. Upon completion with no errors, you can now use Ansible through Cygwin.
     
-    Note: You may access cygwin inside of PowerShell with the following:
+    Note: You may access Cygwin inside of PowerShell with the following:
     
     `PS C:\> C:\cygwin64\bin\bash.exe --init-file <(echo 'source $HOME/.bash_profile')`
 
@@ -144,4 +152,8 @@ This will release all resources except the persistent disk allocation.  Once all
 
 **NOTES**
 1. All filepaths that use `./` above are a relative path from the main project's root directory.
+2. Check your $env:Path variable in PowerShell, it should have:
+3. Check your $PATH variable in cygwin, it should have:
+
+    `PATH="/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:"` & A bunch of Windows C:\ directories
 
