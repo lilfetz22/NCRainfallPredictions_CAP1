@@ -9,7 +9,9 @@ Due to the fact, the Ansible controller does not support the Windows platform, t
 ## Build
 A simple build can be accomplished cross-platform by running the following python script:
 
-`$> python ./scripts/build.py`
+```bash
+$> python ./scripts/build.py
+```
 
 `--help` options will describe how to use the features in the script.
 
@@ -24,41 +26,55 @@ A simple build can be accomplished cross-platform by running the following pytho
 
         2. Open PowerShell and check is whether or not a profile already exists.
 
-            `PS C:\> Test-Path $profile          # Returns True or False`
+            ```powershell
+            PS C:\> Test-Path $profile          # Returns True or False
+            ```
 
         3. If a profile does not exist, run the following to create one.  This will generate a file at `C:\Users\<user>\Documents\WindowsPowerShell\Microsoft.PowerShell_profile.ps1`
 
-            `PS C:\> New-Item -path $profile -type file –force`
+            ```powershell
+            PS C:\> New-Item -path $profile -type file –force
+            ```
 
         4. Anaconda installation adds a profile.ps1 file to your `C:\Users\<user>\Documents\WindowsPowerShell\` directory.  In order to enable PowerShell to use this profile, you need to add a command to also load conda's profile.ps1 into your Microsoft.PowerShell_profile.ps1 file.  To do this, Open the default profile with a Text Editor like Notepad.exe.
 
-            `PS C:\> notepad.exe C:\Users\<user>\Documents\WindowsPowerShell\Microsoft.PowerShell_profile.ps1`
+            ```powershell
+            PS C:\> notepad.exe C:\Users\<user>\Documents\WindowsPowerShell\Microsoft.PowerShell_profile.ps1
+            ```
 
             Add the following to the default profile:
 
-            `. $HOME\Documents\WindowsPowerShell\profile.ps1`
+            ```powershell
+            . $HOME\Documents\WindowsPowerShell\profile.ps1
+            ```
 
             This will dot-source the conda controlled profile file into your normal environment so that it will automatically load when PowerShell is loaded.  Save and exit the editor.
 
         5. Tell Windows to trust your new PowerShell profile & Conda's activation script
 
-            `PS C:\> Unblock-File -Path $home\Documents\WindowsPowerShell\Microsoft.PowerShell_profile.ps1`
-
-            `PS C:\> Unblock-File -Path $home\Documents\WindowsPowerShell\profile.ps1`
+            ```powershell
+            PS C:\> Unblock-File -Path $home\Documents\WindowsPowerShell\Microsoft.PowerShell_profile.ps1
+            PS C:\> Unblock-File -Path $home\Documents\WindowsPowerShell\profile.ps1
+            ```
 
         6. To enable scripts to be run in PowerShell you will need to enable them with the following command.  Windows blocks script execution by default.  This is sometimes considered a security concern so once you are finished running scripts, you should reverse the command to an execution policy of 'Restricted'
 
-            `PS C:\> Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned`
+            ```powershell
+            PS C:\> Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned
+            ```
 
         7. To reload your new modified profile without restarting PowerShell:
 
-            `PS C:\> & $profile`
+            ```powershell
+            PS C:\> & $profile
+            ```
 
         8. Now, you should see '(base)' in front of your command prompt which indicates you are in the base conda environment.  Additionally to verify that jupyter is available, run the following command:
 
-            `(base) PS C:\> Get-Command jupyter`
-
-            `(base) PS C:\> python --version`
+            ```powershell
+            (base) PS C:\> Get-Command jupyter
+            (base) PS C:\> python --version
+            ```
 
 ----
 
@@ -66,8 +82,9 @@ A simple build can be accomplished cross-platform by running the following pytho
 
 If you want to deploy straight to Google Compute Engine, Run:
 
-`$> python ./scripts/deploy_vm.py`
-
+```bash
+$> python ./scripts/deploy_vm.py
+```
 `--help` option will describe how to use the script.
 
 ### PREREQUISTS:
@@ -81,7 +98,9 @@ If you want to deploy straight to Google Compute Engine, Run:
 ## RECALL APPLICATION (LINUX USERS)
 To tear down and release all GCE resources, Run:
 
-`$> python ./scripts/deploy_vm.py --destroy`
+```bash
+$> python ./scripts/deploy_vm.py --destroy
+```
 
 This will release all resources except the persistent disk allocation.  Once all resources are released, Google Cloud billing will cease. 
 
@@ -91,7 +110,9 @@ This will release all resources except the persistent disk allocation.  Once all
 
 If you want to deploy straight to Google Compute Engine, Open Powershell & run:
 
-`PS C:\> python ./scripts/deploy_vm.py`
+```powershell
+PS C:\> python ./scripts/deploy_vm.py
+```
 
 `--help` option will describe how to use the script.
 
@@ -105,7 +126,9 @@ If you want to deploy straight to Google Compute Engine, Open Powershell & run:
 6. Make sure you have attempted a build with the above instructions to ensure your PowerShell environment is ready.
 7. Run the following command to tell Windows to trust the internal script without prompt.  This is required to allow the deployment script to run uninterrupted by idle mode.  Sleep functionalty will be re-enabled by the end of the deployment script.
 
-    `PS C:\> Unblock-File -Path ./scripts/SuspendPowerPlan.ps1`
+    ```powershell
+    PS C:\> Unblock-File -Path ./scripts/SuspendPowerPlan.ps1
+    ```
 
 8. Install ansible in a cygwin environment
 
@@ -124,17 +147,23 @@ If you want to deploy straight to Google Compute Engine, Open Powershell & run:
     11. Once installation has completed, double-click the "Cygwin64 Terminal" shortcut from the desktop (MUST DO ON FIRST EXECUTION for proper configuration).  You won't need it for the rest of these instructions after the initial open.
     12. Close the cygwin terminal and open PowerShell to run the cygwin_configure.py configuration script
 
-        `PS C:\> python <project_dir>\scripts\cygwin_configure.py`
+        ```powershell
+        PS C:\> python <project_dir>\scripts\cygwin_configure.py
+        ```
 
     13. Upon completion with no errors, you can now use Ansible through Cygwin.
     
     Note: You may access Cygwin inside of PowerShell with the following:
     
-    `PS C:\> C:\cygwin64\bin\bash.exe --init-file <(echo 'source $HOME/.bash_profile')`
+    ```powershell
+    PS C:\> C:\cygwin64\bin\bash.exe --init-file <(echo 'source $HOME/.bash_profile')
+    ```
 
     Or send a single command to bash from PowerShell:
 
-    `PS C:\> C:\cygwin64\bin\bash.exe -c 'source $HOME/.bash_profile && <command>'`
+    ```powershell
+    PS C:\> C:\cygwin64\bin\bash.exe -c 'source $HOME/.bash_profile && <command>'
+    ```
 
     **Special Thanks** to [OZNETNERD](http://www.oznetnerd.com/installing-ansible-windows/) for the foundation of these instructions to install Cygwin 2.877 & Ansible on Microsoft Windows.
 
@@ -143,7 +172,9 @@ If you want to deploy straight to Google Compute Engine, Open Powershell & run:
 ## RECALL APPLICATION (WINDOWS USERS)
 To tear down and release all GCE resources, Run in PowerShell:
 
-`PS C:\> python ./scripts/deploy_vm.py --destroy`
+```powershell
+PS C:\> python ./scripts/deploy_vm.py --destroy
+```
 
 This will release all resources except the persistent disk allocation.  Once all resources are released, Google Cloud billing will cease. 
 
