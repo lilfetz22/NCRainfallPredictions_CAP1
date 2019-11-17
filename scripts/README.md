@@ -22,9 +22,20 @@ $> python $proj/scripts/build.py
 <details>
   <summary>PREREQUISTS:</summary>
 
-1. Jupyter installed
-    - Linux: jupyter must be added to the PATH so `$> command -v jupyter` works in terminal
-    - Windows: PowerShell must have jupyter installed so `PS C:\> Get-Command jupyter` works
+- <details>
+    <summary>Mac OSX & Linux</summary>
+
+  1. Jupyter installed
+
+    - Jupyter must be added to the PATH so `$> command -v jupyter` works in terminal
+
+  </details>
+- <details>
+    <summary>Windows</summary>
+
+  1. Jupyter installed
+
+    - PowerShell must have jupyter installed so `PS C:\> Get-Command jupyter` works
         
         <details>
             <summary>To install Jupyter into PowerShell using Anaconda</summary>
@@ -85,6 +96,8 @@ $> python $proj/scripts/build.py
             ```
         </details>
 
+  </details>
+
 </details>
 
 </details>
@@ -102,7 +115,7 @@ $> python $proj/scripts/build.py
 $> python $proj/scripts/deploy_vm.py
 ```
 ```powershell
-PS C:\> python $proj/scripts/deploy_vm.py
+PS C:\> python $proj\scripts\deploy_vm.py
 ```
 
 `--help` option will describe how to use the script.
@@ -112,7 +125,7 @@ PS C:\> python $proj/scripts/deploy_vm.py
   <summary>PREREQUISTS:</summary>
 
 - <details>
-  <summary>MacOSX or Linux</summary>
+  <summary>MacOSX & Linux</summary>
 
     1. Ansible & Jupyter installed on $PATH
     2. Configure `$proj/scripts/ansible/gce_vars/auth` parameters using a service account *.json
@@ -125,15 +138,15 @@ PS C:\> python $proj/scripts/deploy_vm.py
   <summary>Windows</summary>
 
     1. Conda environment enabled therefore Jupyter available on $env:Path
-    2. Configure `$proj/scripts/ansible/gce_vars/auth` parameters using a service account *.json
-    3. Configure `$proj/scripts/ansible/group_vars/all` paremeters with ssh account key to service account.
-    4. Set Administrator password in the file `$proj/scripts/ansible/roles/configure/vars/secrets.yml`
-    5. `$proj/scripts/build.py` available
+    2. Configure `$proj\scripts\ansible\gce_vars\auth` parameters using a service account *.json
+    3. Configure `$proj\scripts\ansible\group_vars\all` paremeters with ssh account key to service account.
+    4. Set Administrator password in the file `$proj\scripts\ansible\roles\configure\vars\secrets.yml`
+    5. `$proj\scripts\build.py` available
     6. Make sure you have attempted a build with the above instructions to ensure your PowerShell environment is ready.
     7. Run the following command to tell Windows to trust the internal script without prompt.  This is required to allow the deployment script to run uninterrupted by idle mode.  Sleep functionalty will be re-enabled by the end of the deployment script.
 
         ```powershell
-        PS C:\> Unblock-File -Path $proj/scripts/SuspendPowerPlan.ps1
+        PS C:\> Unblock-File -Path $proj\scripts\SuspendPowerPlan.ps1
         ```
 
     8. Install ansible in a cygwin environment
@@ -155,7 +168,7 @@ PS C:\> python $proj/scripts/deploy_vm.py
         12. Close the cygwin terminal and open PowerShell to run the cygwin_configure.py configuration script
 
             ```powershell
-            PS C:\> python <project_dir>\scripts\cygwin_configure.py
+            PS C:\> python $proj\scripts\cygwin_configure.py
             ```
 
         13. Upon completion with no errors, you can now use Ansible through Cygwin.
@@ -164,7 +177,9 @@ PS C:\> python $proj/scripts/deploy_vm.py
         **Note: You may access Cygwin inside of PowerShell with the following:**
         
         ```powershell
-        PS C:\> C:\cygwin64\bin\bash.exe --init-file <(echo 'source $HOME/.bash_profile')
+        PS C:\> <(echo 'source $HOME/.bash_profile')
+        PS C:\> C:\cygwin64\bin\bash.exe --init-file $HOME\$filename
+        # Interactive Prompt
         ```
 
         **Or send a single command to bash from PowerShell:**
@@ -192,7 +207,7 @@ PS C:\> python $proj/scripts/deploy_vm.py
 $> python $proj/scripts/deploy_vm.py --destroy
 ```
 ```powershell
-PS C:\> python $proj/scripts/deploy_vm.py --destroy
+PS C:\> python $proj\scripts\deploy_vm.py --destroy
 ```
 
 This will release all resources except the persistent disk allocation.  Once all resources are released, Google Cloud billing will cease. 
