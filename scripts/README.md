@@ -103,45 +103,33 @@ If you want to deploy straight to Google Compute Engine, Open Powershell & run:
 
     **TO INSTALL Ansible on Windows Cygwin Environment**
 
-    1. Follow the instructions @ http://www.oznetnerd.com/installing-ansible-windows/
-    2. Make sure to use the same installation location of `C:\cygwin64\` so the deploy script will be able to find the application. I also placed the package installer into the directory `C:\cygwin64\cyg-get`
-    2. Make sure to install the dependencies that ansible requires using the package manager (setup-x86_64.exe). Search for package and then double click on the word 'skip' to toggle selection.  Press Next, and it will install all items with the indicated version.  The packages are:
+    1. Download [Cygwin](https://www.cygwin.com/).
+    2. Move the downloaded setup file to `C:\cygwin64\cyg-get\`
+    3. Run the Cygwin installation file.
+    4. When asked which download source you’d like to use, select “Install from Internet”.
+    5. When asked for installation location, set it to, `C:\cygwin64`. This is required for the configuration and deploy script to find cygwin.
+    6. When asked where to install Cygwin packages, set it to `C:\cygwin64\cyg-get\`.
+    7. Select the method which suits your internet connection type. e.g If you’re not connecting from behind a proxy, select the “Direct Connection” option.
+    8. Select a mirror to download your packages from. Any option in the list will do, I choose an USA host usually *.edu.
+    9. You’ll then be provided with a list of packages which you can download. Don’t select anything, just click “Next”. Doing so will result in the default applications being installed.
+    10. When asking if you want to install dependencies, leave everything as their defaults and click “Next”. This will install everything you need to get Cygwin up and running.
+    11. Once installation has completed, double-click the "Cygwin64 Terminal" shortcut from the desktop (MUST DO ON FIRST EXECUTION for proper configuration).  You won't need it for the rest of these instructions after the initial open.
+    12. Close the cygwin terminal and open PowerShell to run the python configuration script
 
-        - cygwin32-gcc-g++ 
-        - gcc-core 
-        - gcc-g++ 
-        - git 
-        - libffi-devel 
-        - nano
-        - python2 
-        - python2-devel 
-        - python27-crypto 
-        - python27-openssl 
-        - python27-pip 
-        - python27-setuptools 
-        - tree
+        `PS C:\> python <project_dir>\scripts\cygwin_configure.py`
 
-    3. Once installation has completed, double-click the cygwin terminal shortcut from the desktop (MUST DO ON FIRST EXECUTION for proper configuration).  Then, try to install ansible using pip2.
-
-        `$ pip2 install ansible`
-
-        **If you get pip2 not found error** Your cygwin installation failed to configure your path variable on startup.  You will have to make your home files manually by copying each file from `/etc/skel/*` to `/home/<username>`.  Then source your newly copied `.profile` file using `source /home/<username>/.profile`.  This will enable the normal UNIX $PATH variable with all your '/bin' & etc. applications.  Once fixed re-attempt pip2 install command.
-
-    4. Configure your `/home/<username>/.bash_profile` to load proper $PATH variable on startup.  
-
-        `$ nano /home/<username>/.bash_profile`
-
-        In the editor, scroll down to after the loading of `.bashrc` and add the following line (Copy this directly, failure might require re-installation).  Save and close.
-
-        `PATH="/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:${PATH}"`
-
-    4. Quit out of cygwin and open PowerShell to test your setup with the following:
+    13. Upon completion with no errors, you can now use ansible through cygwin.
     
-        `PS C:\> C:\cygwin64\bin\bash.exe -c "source $HOME/.bash_profile && command -v ansible"`
+    Note: You may access cygwin inside of PowerShell with the following:
+    
+    `PS C:\> C:\cygwin64\bin\bash.exe --init-file <(echo 'source $HOME/.bash_profile')`
 
-        Desired Output: `/usr/bin/ansible`
+    Or send a single command to bash from PowerShell:
 
-        **The output of nothing is a problem!** Check your installation steps.
+    `PS C:\> C:\cygwin64\bin\bash.exe -c 'source $HOME/.bash_profile && <command>'`
+
+    **Special Thanks** to [OZNETNERD](http://www.oznetnerd.com/installing-ansible-windows/) for the foundation of these instructions to install Cygwin 2.877 & Ansible on Microsoft Windows.
+
 
 
 ## RECALL APPLICATION (WINDOWS USERS)
