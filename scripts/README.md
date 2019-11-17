@@ -34,13 +34,13 @@ $> python $proj/scripts/build.py
         2. Open PowerShell and check is whether or not a profile already exists.
 
             ```powershell
-            PS C:\> Test-Path $profile          # Returns True or False
+            PS C:\> Test-Path $PROFILE          # Returns True or False
             ```
 
         3. If a profile does not exist, run the following to create one.  This will generate a file at `C:\Users\<user>\Documents\WindowsPowerShell\Microsoft.PowerShell_profile.ps1`
 
             ```powershell
-            PS C:\> New-Item -path $profile -type file –force
+            PS C:\> New-Item -Path $PROFILE -Type file –Force
             ```
 
         4. Anaconda installation adds a profile.ps1 file to your `C:\Users\<user>\Documents\WindowsPowerShell\` directory.  In order to enable PowerShell to use this profile, you need to add a command to also load conda's profile.ps1 into your Microsoft.PowerShell_profile.ps1 file.  To do this, Open the default profile with a Text Editor like Notepad.exe.
@@ -52,6 +52,7 @@ $> python $proj/scripts/build.py
             Add the following to the default profile:
 
             ```powershell
+            # Import Conda profile
             . $HOME\Documents\WindowsPowerShell\profile.ps1
             ```
 
@@ -73,7 +74,7 @@ $> python $proj/scripts/build.py
         7. To reload your new modified profile without restarting PowerShell:
 
             ```powershell
-            PS C:\> & $PROFILE
+            PS C:\> . $PROFILE
             ```
 
         8. Now, you should see '(base)' in front of your command prompt which indicates you are in the base conda environment.  Additionally to verify that jupyter is available, run the following command:
@@ -145,8 +146,8 @@ PS C:\> python $proj/scripts/deploy_vm.py
         3. Run the Cygwin installation file.
         4. When asked which download source you’d like to use, select “Install from Internet”.
         5. When asked for installation location, set it to, `C:\cygwin64`. **This is required for the cygwin_configure.py and deploy_vm.py scripts to find Cygwin.**
-        6. When asked where to install Cygwin packages, set it to `C:\cygwin64\cyg-get\`.
-        7. Select the method which suits your internet connection type. e.g If you’re not connecting from behind a proxy, select the “Direct Connection” option.
+        6. When asked where to install local packages, set it to `C:\cygwin64\cyg-get\`.
+        7. Select the method which suits your internet connection type. e.g If you’re not connecting from behind a proxy, select the default "Use System Proxy Settings" or if needed "Direct Connection".
         8. Select a mirror to download your packages from. Any option in the list will do, I choose an USA host usually *.edu.
         9. You’ll then be provided with a list of packages which you can download. Don’t select anything, just click “Next”. Doing so will result in the default applications being installed.
         10. When asking if you want to install dependencies, leave everything as their defaults and click “Next”. This will install everything you need to get Cygwin up and running.

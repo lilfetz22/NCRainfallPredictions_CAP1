@@ -3,43 +3,111 @@
 
 from os import path as p
 from os import sep as ossep
+from os import remove as del_file
 from sys import stderr
+from getpass import getuser
 from shutil import move as mv
 from re import compile as regex
 from platform import system as get_os
+from time import sleep
+import sys
 import subprocess
+
+
+def eprint(*args, **kwargs):
+    print(*args, file=sys.stderr, flush=True, **kwargs)
+
+def usage(printTo=""):
+	this_file = p.basename(p.abspath(__file__))
+	printFn = print if printTo == "stdout" else eprint
+	printFn("Usage: ./{0} [-h | --help]".format(this_file))
+	exit(1)
+
+def help():
+    print("")
+    print(" Ansible on Cygwin64 Configuration Script ")
+    print("------------------------------------------")
+    print("")
+    try: 
+        usage(printTo="stdout")
+    except SystemExit:
+        print("")
+    print("Available Options: ")
+    print("  -h | --help     Help")
+    print("")
+    exit(0)
+
+# Process line arguments
+def process_args( args ):
+
+	# Argument Handlers
+	def request_help(i):
+		help()
+	def end_args(i):
+		return("end_args")
+	def unknown(i):
+		usage()
+
+	switcher = {
+		'-h' :        request_help,
+		'--help' :    request_help,
+		'--' : 		  end_args
+	}
+
+	for i in range(1,len(args)):
+		try:
+			func = switcher[args[i]]
+			retVal = func(i)
+			if retVal == "end_args":
+				break
+		except KeyError:
+			unknown(i)
+		except SystemExit as exitrequest:
+			raise(exitrequest)
+		
+	## // If-statements to check if interdependent options are satisfied // ##
+	
+	## // IF-statements to fill all vars with defaults if not already filled // ##
+
 
 
 ## ACTION FUNCTION
 ## Configure aliases in ~/.bashrc
 ##   - package manager alias
 def add_alias():
-	profile_filename = p.expanduser('~/.bashrc')
-	tmp_filename = p.expanduser('~/.~$.bashrc')
-	pkgmgnr_alias = 'alias cyg-get="/cyg-get/setup-x86_64.exe -P"'
+	print("Adding aliases...")
+	profile_filename = p.join(p.abspath(ossep),'cygwin64','home',getuser(),'.bashrc')
+	tmp_filename = p.join(p.abspath(ossep),'cygwin64','home',getuser(),'.~$.bashrc')
+	pkgmgnr_alias = 'alias cyg-get="/cyg-get/setup-x86_64.exe -q -P"'
 	line2match = regex(r'^# Some example alias instructions')
 
-	found = False
-	def insertAliasConfig(line, newfile):
-		if not found and line2match.search(line):
-			newfile.write("# Set alias for cygwin's package manager")
-			newfile.write(pkgmgnr_alias)
-			newfile.write('\n\n')
+	def insertAliasConfig(line, newfile, logdata):
+		if 'found' not in logdata:
+			logdata['found'] = False
+			 
+		if not logdata['found'] and line2match.search(line):
+			newfile.write("# Set alias for cygwin's package manager"+'\n')
+			newfile.write(pkgmgnr_alias+'\n')
+			newfile.write('\n')
 			newfile.write(line)
-			found = True
+			logdata['found'] = True
+		elif len(line) == 0 and not logdata['found']:
+			raise( Exception('ERROR: EOF before match was found in file.') )
 		else:
 			newfile.write(line)
 
+	print("Adding pkg manager alias: \n`{0}`".format(pkgmgnr_alias))
 	try:
 		__modifyfile(profile_filename, tmp_filename, insertAliasConfig)
 	except Exception as err:
-		print("Failed to add alias while modifying {}".format(profile_filename))
+		eprint("Failed to add alias while modifying {}".format(profile_filename))
 		raise(err)
 
 
 ## ACTION FUNCTION
 ## Configure $PATH variable
 def configure_path():
+	print("Configuring cygwin $PATH variable...")
 	unix_precedence = [ 
 		'/usr/local/bin',
 		'/usr/bin',
@@ -48,27 +116,31 @@ def configure_path():
 		'/sbin'
 	]
 
-	path_assignment = 'PATH="'+':'.join(unix_precedence)+'$\{PATH\}"'
-	line2match = regex(r'^# Set PATH so it includes users\'s private bin')
+	path_assignment = 'PATH="'+':'.join(unix_precedence)+':${PATH}"'
+	line2match = regex(r'^# Set PATH so it includes user\'s private bin')
 
-	bashprofilefile = p.expanduser('~/.bash_profile')
-	tmpfile = p.expanduser('~/.~$.bash_profile')
+	bashprofilefile = p.join(p.abspath(ossep),'cygwin64','home',getuser(),'.bash_profile')
+	tmpfile = p.join(p.abspath(ossep),'cygwin64','home',getuser(),'.~$.bash_profile')
 
-	found = False
-	def insertPathConfig(line, newfile):
-		if not found and line2match.search(line):
-			newfile.write("# Set default path variable")
-			newfile.write(path_assignment)
-			newfile.write('\n\n')
+	def insertPathConfig(line, newfile, logdata):
+		if 'found' not in logdata:
+			logdata['found'] = False
+			 
+		if not logdata['found'] and line2match.search(line):
+			newfile.write("# Set default path variable"+'\n')
+			newfile.write(path_assignment+'\n')
+			newfile.write('\n')
 			newfile.write(line)
-			found = True
+			logdata['found'] = True
+		elif len(line) == 0 and not logdata['found']:
+			raise( Exception('ERROR: EOF before match was found in file.') )
 		else:
 			newfile.write(line)
 
 	try:
 		__modifyfile(bashprofilefile, tmpfile, insertPathConfig)
 	except Exception as err:
-		print("Failed to modify {}".format(bashprofilefile))
+		eprint("Failed to modify {}".format(bashprofilefile))
 		raise(err)
 
 ## HELPER FUNCTION
@@ -77,27 +149,46 @@ def configure_path():
 def __modifyfile(filename, tmpfilename, processline_Fn):
 	try:
 		origf = open(filename, "r")
-		newf = open(tmpfilename, "w") 
-
+		newf = open(tmpfilename, "w+")
+		
+		persistentdata = {}
 		while True:
-			line = f.readline()
-			if line == '':	# EOF
+			line = origf.readline()
+			if len(line) == 0:	# EOF
+				processline_Fn(line, newf, persistentdata)
 				break
 			else:
-				processline_Fn(line, newf)
+				processline_Fn(line, newf, persistentdata)
 
-	except:
+	except Exception as err:
+		eprint(err)
 		newf.close()
-		# delete tmp file
+		newf = None
+		del_file(tmpfilename)		# delete tmp file
 	finally:
 		origf.close()
 		if newf is not None:
 			newf.close()
 
+	pathsplitter = regex(r'\\')
+	pathmapper = regex(r'^C:/(.*)$')
+	cygwin_filename = pathmapper.sub(	# swap filename to path from inside cygwin
+		'/cygdrive/c/\\1', 
+		'/'.join(
+			pathsplitter.split(tmpfilename)
+		)
+	)
 	try:
+		# convert file type with dos2unix
+		exitcode = __runcygcmd("/usr/bin/dos2unix.exe {file}".format(file=cygwin_filename))
+		if exitcode != 0:
+			raise( Exception("Failed to convert file to unix file.") )
+		
+		# replace original file
 		mv( tmpfilename, filename )
+
 	except Exception as err:
-		print(err)
+		eprint(err)
 		raise(err)
 	else:
 		print("Modified: {}".format(filename))
@@ -115,14 +206,18 @@ def __runcygcmd(cygcmd=""):
 			[cygwin_bash, '-c', "source $HOME/.bash_profile && {cmd}".format(cmd=cygcmd)], 
 			shell=False,
 		)
-		maximum_runtime = 60*8  # 8 min
-		try:
-			pbash.wait(timeout=maximum_runtime)
-		except subprocess.TimeoutExpired as err:
-			pbash.kill()
-			raise(err)
-		else:
-			return(pbash.returncode)
+		maximum_runtime = 60*10  # 10 min
+		proceedregex = regex(r'^(y|yes|Y|YES)$')
+		while True:
+			try:
+				pbash.wait(timeout=maximum_runtime)
+			except subprocess.TimeoutExpired as err:
+				answer = input("Max runtime (10m) exceeded, do you want to kill the process (Y/n)?"+' ')
+				if proceedregex.match(answer) and pbash.poll() is None:
+					pbash.kill()
+					raise(err)
+			else:
+				return(pbash.returncode)
 
 	except KeyboardInterrupt as usr_canx:
 		raise(usr_canx)
@@ -131,10 +226,35 @@ def __runcygcmd(cygcmd=""):
 	else:
 		pass
 
+## ACTION FUNCTION
+## Install dos2unix.exe package for file conversions
+def install_utilities():
+	print("Installing Utilities...")
+	utilities = [
+		'dos2unix'
+	]
+
+	for utility in utilities:
+		print("Installing {}...".format(utility))
+		try:
+			exitcode = __runcygcmd("/cyg-get/setup-x86_64.exe -q -P {}".format(utility))
+			if exitcode != 0:
+				raise( Exception("Utility '{}' returned a failed exit status".format(utility)) )
+			else:
+				continue
+		except Exception as err:
+			eprint(err)
+			raise(err)
+	
+	print("INSTALLED: Utilities in cygwin")
+	# END of install_utilities
+
+
 ## HELPER FUNCTION
 ## Install ansible dependencies
 ## requires cyg-get alias to exist
 def __install_ansible_dep():
+	print('Installing ansible package dependencies...')
 	dependencies = [ 
 		'cygwin32-gcc-g++',  
         'gcc-core',
@@ -152,9 +272,11 @@ def __install_ansible_dep():
 	]
 	pipfinder = regex(r'-pip$')
 
-	for dep in dependencies:
+	for d in range(len(dependencies)):
+		dep = dependencies[d]
+		print("Dependency {i} of {total}".format(i=d+1,total=len(dependencies)))
 		try:
-			exitcode = __runcygcmd("cyg-get {}".format(dep))
+			exitcode = __runcygcmd("/cyg-get/setup-x86_64.exe -q -P {}".format(dep))
 			if exitcode != 0:
 				raise( Exception("Dependency '{}' returned a failed exit status".format(dep)) )
 			elif pipfinder.match(dep):
@@ -162,9 +284,10 @@ def __install_ansible_dep():
 				if __runcygcmd("ln -s /usr/bin/pip3 /usr/bin/pip") != 0:
 					raise( Exception("Failed to add pip symbolic link") )
 			else:
+				sleep(30)  # wait for installation of previous package
 				continue
 		except Exception as err:
-			print( err, file=stderr, flush=True )
+			eprint(err)
 			raise(err)
 	
 	print("INSTALLED: Ansible dependencies in cygwin")
@@ -174,12 +297,27 @@ def __install_ansible_dep():
 ## ACTION FUNCTION
 ## Install ansible
 def install_ansible():
+	print("Installing Ansible...")
 	config_actions = [ 
 		{ 'fn'  : __install_ansible_dep, 'onerror':"FAILED: Dependency package installations into cygwin" },
-		{ 'cmd' : "pip install ansible", 'onerror':"FAILED: pip installation of Ansible into cygwin" }
+		{ 
+			'cmd' : "pip install ansible", 
+			'prompt': True,
+			'prompt_text': "\nHave all the dependencies completed yet (y/n)?",
+			'onerror':"FAILED: pip installation of Ansible into cygwin" 
+		}
 	]
+	proceedregex = regex(r'^(y|yes|Y|YES)$')
 
 	for action in config_actions:
+		if 'prompt' in action and action['prompt']:
+			while True:
+				answer = input(action['prompt_text']+' ')
+				if proceedregex.match(answer):
+					break
+				else:
+					print('zzz...')
+					sleep(10)
 		try:
 			if 'fn' in action:
 				action['fn']()
@@ -189,7 +327,7 @@ def install_ansible():
 			else:
 				continue
 		except Exception as err:
-			print( action['onerror'], file=stderr, flush=True )
+			eprint( action['onerror'] )
 			raise(err)
 
 	# End ansible install
@@ -198,25 +336,31 @@ def install_ansible():
 
 ## AS MAIN SCRIPT
 if __name__ == "__main__":
+
+	process_args(sys.argv)
+
+	print("Checking script environment...")
 	compatible_os = regex(r'Windows')
 	if not compatible_os.match(get_os()):
-		print("FAILED: This script only works on Windows with cygwin installed.", file=stderr, flush=True)
+		eprint("FAILED: This script only works on Windows with cygwin installed.")
 		exit(-1)
 	else:
 		try:
 			subprocess.check_call([ 
 				'powershell.exe',
-				'if (-not ([System.IO.File]::Exists("{cygwin_path}"))) { throw "Error" }'.format(
+				'if (-not ([System.IO.File]::Exists("{cygwin_path}"))) {{ throw "Error" }}'.format(
 					cygwin_path=p.join(p.abspath(ossep),'cygwin64','bin',"bash.exe")
 				)], 
 				shell=False
 			)
 		except subprocess.CalledProcessError:
-			print("MISSING PREREQ: cygwin not found @ {}/".format(p.join(p.abspath(ossep),'cygwin64')), file=stderr, flush=True)
+			eprint("MISSING PREREQ: cygwin not found @ {}/".format(p.join(p.abspath(ossep),'cygwin64')))
 			exit(-2)
 
 	# VALID Environment
+	print("PASS")
 	config_actions = [ 
+		{ 'fn':install_utilities, 'onerror':"FAILED: installation of utilities in cygwin" },
 		{ 'fn':configure_path, 'onerror':"FAILED: configuration of $PATH variable in cygwin" },
 		{ 'fn':add_alias, 'onerror':"FAILED: configuration of bash aliases in cygwin" },
 		{ 'fn':install_ansible, 'onerror':"FAILED: Ansible installation into cygwin" }
@@ -226,7 +370,7 @@ if __name__ == "__main__":
 		try:
 			action['fn']()
 		except:
-			print( action['onerror'], file=stderr, flush=True )
+			eprint( action['onerror'] )
 			exit(1)
 
 	# Validation
@@ -237,8 +381,8 @@ if __name__ == "__main__":
 			print("TEST (ansible verification):\t SUCCESS")
 			
 	except Exception as err:
-		print(err, file=stderr, flush=True)
-		print("Check installation steps & reinstall, "+
+		eprint(err)
+		eprint('\n'+"Check installation steps & reinstall, "+
 			  "if still is an issue, "+
 			  "please submit a issue to github.com/codejedi365/CapstoneProject1.", file=stderr, flush=True)
 		exit(2)

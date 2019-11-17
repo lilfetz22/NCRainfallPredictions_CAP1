@@ -88,7 +88,7 @@ def check_prereqs():
 		## *****************************
 		cygwin_bash = os.path.join(os.path.abspath(os.sep),'cygwin64','bin',"bash.exe")
 		prereqs = [
-			{ 'test' : ['powershell.exe', 'if (-not ([System.IO.File]::Exists("{0}"))) { throw "Error" }'.format(cygwin_bash)], 'isshell':False, 'onerror':"\ncygwin64's bash.exe is not installed but is required." },
+			{ 'test' : ['powershell.exe', 'if (-not ([System.IO.File]::Exists("{0}"))) {{ throw "Error" }}'.format(cygwin_bash)], 'isshell':False, 'onerror':"\ncygwin64's bash.exe is not installed but is required." },
 			{ 'test' : [cygwin_bash, '-c', ". $HOME/.bash_profile && command -v ls"], 'isshell':False, 'onerror': "cygwin's $PATH variable not configured. Check C:\cygwin64\home\<user>\.bash_profile" },
 			{ 'test' : [cygwin_bash, '-c', ". $HOME/.bash_profile && command -v ansible"], 'isshell':False, 'onerror': "ansible is not installed but is required." }
 		]
