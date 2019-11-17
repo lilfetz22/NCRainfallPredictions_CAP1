@@ -78,21 +78,30 @@ def add_alias():
 	print("Adding aliases...")
 	profile_filename = p.join(p.abspath(ossep),'cygwin64','home',getuser(),'.bashrc')
 	tmp_filename = p.join(p.abspath(ossep),'cygwin64','home',getuser(),'.~$.bashrc')
+
 	pkgmgnr_alias = 'alias cyg-get="/cyg-get/setup-x86_64.exe -q -P"'
+	lines2write = [
+		"# Set alias for cygwin's package manager",
+		pkgmgnr_alias,
+		''
+	]
+
 	line2match = regex(r'^# Some example alias instructions')
+	prev_complete_match = regex(r'^'+lines2write[0]) 
 
 	def insertAliasConfig(line, newfile, logdata):
 		if 'found' not in logdata:
 			logdata['found'] = False
 			 
 		if not logdata['found'] and line2match.search(line):
-			newfile.write("# Set alias for cygwin's package manager"+'\n')
-			newfile.write(pkgmgnr_alias+'\n')
-			newfile.write('\n')
+			for textentry in lines2write:
+				newfile.write(textentry+'\n')
 			newfile.write(line)
 			logdata['found'] = True
 		elif len(line) == 0 and not logdata['found']:
 			raise( Exception('ERROR: EOF before match was found in file.') )
+		elif prev_complete_match.search(line):
+			raise( StopIteration() )
 		else:
 			newfile.write(line)
 
@@ -117,7 +126,14 @@ def configure_path():
 	]
 
 	path_assignment = 'PATH="'+':'.join(unix_precedence)+':${PATH}"'
+	lines2write = [
+		'# Set default path variable',
+		path_assignment,
+		''
+	]
+
 	line2match = regex(r'^# Set PATH so it includes user\'s private bin')
+	prev_complete_match = regex(r'^'+lines2write[0]) 
 
 	bashprofilefile = p.join(p.abspath(ossep),'cygwin64','home',getuser(),'.bash_profile')
 	tmpfile = p.join(p.abspath(ossep),'cygwin64','home',getuser(),'.~$.bash_profile')
@@ -127,13 +143,14 @@ def configure_path():
 			logdata['found'] = False
 			 
 		if not logdata['found'] and line2match.search(line):
-			newfile.write("# Set default path variable"+'\n')
-			newfile.write(path_assignment+'\n')
-			newfile.write('\n')
+			for textentry in lines2write:
+				newfile.write(textentry+'\n')
 			newfile.write(line)
 			logdata['found'] = True
 		elif len(line) == 0 and not logdata['found']:
 			raise( Exception('ERROR: EOF before match was found in file.') )
+		elif prev_complete_match.search(line):
+			raise( StopIteration() )
 		else:
 			newfile.write(line)
 
@@ -160,6 +177,12 @@ def __modifyfile(filename, tmpfilename, processline_Fn):
 			else:
 				processline_Fn(line, newf, persistentdata)
 
+	except StopIteration:
+		print("Verified File: {}".format(filename))
+		newf.close()
+		newf = None
+		del_file(tmpfilename)
+		return()
 	except Exception as err:
 		eprint(err)
 		newf.close()
