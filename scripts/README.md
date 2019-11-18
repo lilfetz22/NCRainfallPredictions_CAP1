@@ -177,7 +177,7 @@ PS C:\> python $proj\scripts\deploy_vm.py
         **Note: You may access Cygwin inside of PowerShell with the following:**
         
         ```powershell
-        PS C:\> <(echo 'source $HOME/.bash_profile')
+        PS C:\> 'source $HOME/.bash_profile' | Out-File -FilePath $HOME\$filename
         PS C:\> C:\cygwin64\bin\bash.exe --init-file $HOME\$filename
         # Interactive Prompt
         ```

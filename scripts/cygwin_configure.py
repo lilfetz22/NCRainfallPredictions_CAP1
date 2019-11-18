@@ -250,6 +250,32 @@ def __runcygcmd(cygcmd=""):
 	else:
 		pass
 
+## HELPER FUNCTION
+## Spawn a subprocess that will run a check for an installed package
+def __is_pkg_installed(pkgname=""):
+	cygwin_bash = p.join(p.abspath(ossep),'cygwin64','bin',"bash.exe")
+	if pkgname == "":
+		raise(Exception("__is_pkg_installed(): no command provided."))
+
+	print("[bash.exe] $> cygcheck --check-setup "+pkgname)
+	pkgcheckcmd = "cygcheck --check-setup {pkg} | awk 'NR>=3';".format(pkg=pkgname)
+	try:
+		pbash_stdout = subprocess.check_output(
+			[cygwin_bash, '-c', "source $HOME/.bash_profile && {cmd}".format(cmd=pkgcheckcmd)],
+			shell=False,
+			universal_newlines=True,	# forces stdout to be a string
+			timeout=15
+		)
+		return( False if pbash_stdout == "" else True )
+
+	except KeyboardInterrupt as usr_canx:
+		raise(usr_canx)
+	except Exception as err:
+		raise(err)
+	else:
+		pass
+
+
 ## ACTION FUNCTION
 ## Install dos2unix.exe package for file conversions
 def install_utilities():
@@ -260,8 +286,13 @@ def install_utilities():
 	proceedregex = regex(r'^(y|yes|Y|YES)$')
 
 	for utility in utilities:
-		print("Installing {}...".format(utility['pkg']))
 		try:
+			if __is_pkg_installed(utility['pkg']):
+				print("VERIFIED: {} already installed.".format(utility['pkg']))
+				continue
+			else:
+				print("Installing {}...".format(utility['pkg']))
+			
 			exitcode = __runcygcmd("/cyg-get/setup-x86_64.exe -q -P {}".format(utility['pkg']))
 			if exitcode != 0:
 				raise( Exception("Utility '{}' returned a failed exit status ({})".format(utility['pkg'], exitcode)) )
@@ -311,6 +342,12 @@ def __install_ansible_dep():
 		dep = dependencies[d]
 		print("Dependency {i} of {total} ({pkg})".format(i=d+1,total=len(dependencies),pkg=dep))
 		try:
+			if __is_pkg_installed(dep):
+				print("VERIFIED: {} already installed.".format(dep))
+				continue
+			else:
+				print("Installing {}...".format(dep))
+
 			exitcode = __runcygcmd("/cyg-get/setup-x86_64.exe -q -P {}".format(dep))
 			if exitcode != 0:
 				raise( Exception("Dependency '{}' returned a failed exit status ({})".format(dep, exitcode)) )
