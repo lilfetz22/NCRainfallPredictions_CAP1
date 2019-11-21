@@ -4,6 +4,7 @@
 from os import path as p
 from os import sep as ossep
 from os import remove as del_file
+from os import listdir as ls
 from sys import stderr
 from getpass import getuser
 from shutil import move as mv
@@ -27,7 +28,17 @@ def help():
     print("")
     print(" Ansible on Cygwin64 Configuration Script ")
     print("------------------------------------------")
-    print("")
+    print("This script simplifies the user burden of manually installing each "+
+		  "package into cygwin.  This will execute the commands to set up the "+
+		  "package alias and $PATH variable in ~/.bash_profile & ~/.bashrc.  Then "+
+		  "it will execute a sequential install of ansible related dependent "+
+		  "packages into the Cygwin environment.  Lastly, it will run a pip "+
+		  "install of the ansible package."+'\n\n'+
+		  "Requirements: \n"+
+		  "   1. Run with Administrator privileges.\n"+
+		  "   2. Run from Windows OS proper (PowerShell recommended)\n"+
+		  "   3. Cygwin installed at C:\\cygwin64\\ "+
+		  '\n')
     try: 
         usage(printTo="stdout")
     except SystemExit:
@@ -328,6 +339,7 @@ def __install_ansible_dep():
         'git',
         'libffi-devel',
         'nano',
+		'openssl',
         'python3',
         'python3-devel',
         'python36-crypto',
@@ -418,6 +430,7 @@ if __name__ == "__main__":
 		exit(-1)
 	else:
 		try:
+			# Check cygwin64's bash.exe exist
 			subprocess.check_call([ 
 				'powershell.exe',
 				'if (-not ([System.IO.File]::Exists("{cygwin_path}"))) {{ throw "Error" }}'.format(
@@ -425,9 +438,16 @@ if __name__ == "__main__":
 				)], 
 				shell=False
 			)
+			# Check running as administrator (only Administrator rights can see the temp dir)
+			ls(p.join(ossep, 'Windows', 'temp'))
+
 		except subprocess.CalledProcessError:
 			eprint("MISSING PREREQ: cygwin not found @ {}/".format(p.join(p.abspath(ossep),'cygwin64')))
 			exit(-2)
+		except PermissionError:
+			eprint('\n'+"FAILED: Script needs to be run with administrator privileges.")
+			eprint("PowerShell w/ Admin Privalages command: \n\t Start-Process powershell -Verb RunAs")
+			exit(-3)
 		except KeyboardInterrupt as usr_canx:
 			eprint('\n'+"User interrupted configuration process.  Exiting...")
 			exit(1)
