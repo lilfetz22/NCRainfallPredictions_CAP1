@@ -241,16 +241,18 @@ def __runcygcmd(cygcmd=""):
 			[cygwin_bash, '-c', "source $HOME/.bash_profile && {cmd}".format(cmd=cygcmd)], 
 			shell=False,
 		)
-		maximum_runtime = 60*10  # 10 min
+		maximum_runtime = 60*25  # 25 min
 		proceedregex = regex(r'^(y|yes|Y|YES)$')
 		while True:
 			try:
 				pbash.wait(timeout=maximum_runtime)
 			except subprocess.TimeoutExpired as err:
-				answer = input("Max runtime (10m) exceeded, do you want to kill the process (Y/n)?"+' ')
+				answer = input('\n'+"Max runtime (25m) exceeded, do you want to kill the process (Y/n)?"+' ')
 				if proceedregex.match(answer) and pbash.poll() is None:
 					pbash.kill()
 					raise(err)
+				else:
+					print("Ok! Waiting...")
 			else:
 				return(pbash.returncode)
 
@@ -269,7 +271,7 @@ def __is_pkg_installed(pkgname=""):
 		raise(Exception("__is_pkg_installed(): no command provided."))
 
 	print("[bash.exe] $> cygcheck --check-setup "+pkgname)
-	pkgcheckcmd = "cygcheck --check-setup {pkg} | awk 'NR>=3';".format(pkg=pkgname)
+	pkgcheckcmd = "/usr/bin/cygcheck --check-setup {pkg} | /usr/bin/awk 'NR>=3';".format(pkg=pkgname)
 	try:
 		pbash_stdout = subprocess.check_output(
 			[cygwin_bash, '-c', "source $HOME/.bash_profile && {cmd}".format(cmd=pkgcheckcmd)],
@@ -385,23 +387,12 @@ def install_ansible():
 	config_actions = [ 
 		{ 'fn'  : __install_ansible_dep, 'onerror':"FAILED: Dependency package installations into cygwin" },
 		{ 
-			'cmd' : "pip install ansible", 
-			'prompt': True,
-			'prompt_text': "\nHave all the dependencies completed yet (y/n)?",
+			'cmd' : "pip install ansible",
 			'onerror':"FAILED: pip installation of Ansible into cygwin" 
 		}
 	]
-	proceedregex = regex(r'^(y|yes|Y|YES)$')
 
 	for action in config_actions:
-		if 'prompt' in action and action['prompt']:
-			while True:
-				answer = input(action['prompt_text']+' ')
-				if proceedregex.match(answer):
-					break
-				else:
-					print('zzz...')
-					sleep(10)
 		try:
 			if 'fn' in action:
 				action['fn']()
