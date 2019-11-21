@@ -270,16 +270,17 @@ def __is_pkg_installed(pkgname=""):
 	if pkgname == "":
 		raise(Exception("__is_pkg_installed(): no command provided."))
 
-	print("[bash.exe] $> cygcheck --check-setup "+pkgname)
-	pkgcheckcmd = "/usr/bin/cygcheck --check-setup {pkg} | /usr/bin/awk 'NR>=3';".format(pkg=pkgname)
+	pkgcheckcmd = "/usr/bin/cygcheck --check-setup {pkg} ".format(pkg=pkgname) \
+			     +"| /usr/bin/awk -F \"[ ][ ]+\" 'NR>=3 {print $3}'"
 	try:
+		print("[bash.exe] $> "+pkgcheckcmd)
 		pbash_stdout = subprocess.check_output(
 			[cygwin_bash, '-c', "source $HOME/.bash_profile && {cmd}".format(cmd=pkgcheckcmd)],
 			shell=False,
 			universal_newlines=True,	# forces stdout to be a string
 			timeout=15
 		)
-		return( False if pbash_stdout == "" else True )
+		return( True if pbash_stdout.strip() == "OK" else False )
 
 	except KeyboardInterrupt as usr_canx:
 		raise(usr_canx)
@@ -296,34 +297,36 @@ def install_utilities():
 	utilities = [
 		{ 'pkg':'dos2unix', 'prompt':True,'prompt_text':"Has the installation completed yet (Y/n)?" }
 	]
-	proceedregex = regex(r'^(y|yes|Y|YES)$')
 
+	is_first_loop = True
 	for utility in utilities:
-		try:
-			if __is_pkg_installed(utility['pkg']):
-				print("VERIFIED: {} already installed.".format(utility['pkg']))
-				continue
-			else:
-				print("Installing {}...".format(utility['pkg']))
-			
-			exitcode = __runcygcmd("/cyg-get/setup-x86_64.exe -q -P {}".format(utility['pkg']))
-			if exitcode != 0:
-				raise( Exception("Utility '{}' returned a failed exit status ({})".format(utility['pkg'], exitcode)) )
-			elif 'prompt' in utility and utility['prompt']:
-				sleep(30)
-				while True:
-					answer = input(utility['prompt_text']+' ')
-					if proceedregex.match(answer):
-						break			# break from user input loop & waiting loop
+		while True:
+			try:
+				if __is_pkg_installed(utility['pkg']):  # if needed, step 2
+					print("VERIFIED: {pkg} {adj} installed.".format(pkg=utility['pkg'], adj=('already' if is_first_loop else '')))
+					break
+
+				elif not is_first_loop:  # on 1 & 2 failure, step 3
+					raise( StopIteration('FAILURE: utility {} could not be installed.'.format(utility['pkg'])) )
+
+				else:  # likely step 1
+					print("Installing {}...".format(utility['pkg']))
+					exitcode = __runcygcmd("/cyg-get/setup-x86_64.exe -q -P {}".format(utility['pkg']))
+					if exitcode != 0:
+						raise( subprocess.SubprocessError("Utility '{}' returned a failed exit status ({})".format(utility['pkg'], exitcode)) )
 					else:
-						print('zzz...')
-						sleep(20)
-				continue
-			else:
-				continue		# proceed to next utility
-		except Exception as err:
-			eprint(err)
-			raise(err)
+						break		# installation went fine
+				
+			except subprocess.SubprocessError as err:
+				eprint(err)
+				if is_first_loop:
+					is_first_loop = False
+					continue		# try again to verify installation
+				else:
+					raise(err)		# likely completely other error
+			except StopIteration as err:
+				e = Exception(str(err))   # re-wrap error
+				raise(e)
 	
 	print("INSTALLED: Utilities in cygwin")
 	# END of install_utilities
@@ -355,26 +358,42 @@ def __install_ansible_dep():
 	for d in range(len(dependencies)):
 		dep = dependencies[d]
 		print("Dependency {i} of {total} ({pkg})".format(i=d+1,total=len(dependencies),pkg=dep))
-		try:
-			if __is_pkg_installed(dep):
-				print("VERIFIED: {} already installed.".format(dep))
-				continue
-			else:
-				print("Installing {}...".format(dep))
+		is_first_loop = True
+		
+		while True:
+			try:
+				if __is_pkg_installed(dep):  # if needed, step 2
+					print("VERIFIED: {dependency} {adj} installed.".format(dependency=dep, adj=('already' if is_first_loop else '')))
+					break
+				
+				elif not is_first_loop:  # on 1 & 2 failure, step 3
+					raise( StopIteration('FAILURE: dependency {} could not be installed.'.format(dep)) )
+				
+				else:  # likely step 1
+					print("Installing {}...".format(dep))
+					exitcode = __runcygcmd("/cyg-get/setup-x86_64.exe -q -P {}".format(dep))
+					if exitcode != 0:
+						raise( subprocess.SubprocessError("Dependency '{}' returned a failed exit status ({})".format(dep, exitcode)) )
+					else:
+						break		# installation went fine
+				
+			except subprocess.SubprocessError as err:
+				eprint(err)
+				if is_first_loop:
+					is_first_loop = False
+					continue		# try again to verify installation
+				else:
+					raise(err)		# likely completely other error
+			except StopIteration as err:
+				e = Exception(str(err))   # re-wrap error
+				raise(e)
 
-			exitcode = __runcygcmd("/cyg-get/setup-x86_64.exe -q -P {}".format(dep))
-			if exitcode != 0:
-				raise( Exception("Dependency '{}' returned a failed exit status ({})".format(dep, exitcode)) )
-			elif pipfinder.match(dep):
-				# add pip pointer
-				if __runcygcmd("ln -s /usr/bin/pip3 /usr/bin/pip") != 0:
-					raise( Exception("Failed to add pip symbolic link") )
+		if pipfinder.search(dep):
+			# add pip pointer
+			if __runcygcmd("ln -s /usr/bin/pip3 /usr/local/bin/pip") != 0:
+				raise( Exception("Failed to add pip symbolic link") )
 			else:
-				sleep(60)  # wait for installation of previous package
-				continue
-		except Exception as err:
-			eprint(err)
-			raise(err)
+				print("Created symlink to pip3 as at /usr/local/bin/pip")
 	
 	print("INSTALLED: Ansible dependencies in cygwin")
 	# END of __install_ansible_dep
