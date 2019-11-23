@@ -83,14 +83,11 @@ def check_prereqs():
 	missing_prereqs = 0
 	prereqs = []
 	if os_version == 'Windows':
-		## *****************************
-		##  UNTESTED FUNCTIONALITY
-		## *****************************
 		cygwin_bash = os.path.join(os.path.abspath(os.sep),'cygwin64','bin',"bash.exe")
 		prereqs = [
 			{ 'test' : ['powershell.exe', 'if (-not ([System.IO.File]::Exists("{0}"))) {{ throw "Error" }}'.format(cygwin_bash)], 'isshell':False, 'onerror':"\ncygwin64's bash.exe is not installed but is required." },
-			{ 'test' : [cygwin_bash, '-c', ". $HOME/.bash_profile && command -v ls"], 'isshell':False, 'onerror': "cygwin's $PATH variable not configured. Check C:\cygwin64\home\<user>\.bash_profile" },
-			{ 'test' : [cygwin_bash, '-c', ". $HOME/.bash_profile && command -v ansible"], 'isshell':False, 'onerror': "ansible is not installed but is required." }
+			{ 'test' : [cygwin_bash, '-c', ". $HOME/.bash_profile && command -v ls 1>/dev/null"], 'isshell':False, 'onerror': "cygwin's $PATH variable not configured. Check C:\cygwin64\home\<user>\.bash_profile" },
+			{ 'test' : [cygwin_bash, '-c', ". $HOME/.bash_profile && command -v ansible 1>/dev/null"], 'isshell':False, 'onerror': "ansible is not installed but is required." }
 		]
 	elif os_version == 'Linux' or os_version == 'Darwin':
 		prereqs = [
@@ -269,6 +266,14 @@ def process_args( argslist ):
 	VERBOSE = VERBOSE if VERBOSE is not None else False	
 
 
+def win2posixpaths(winpath="C:\\"):
+	return re.sub(
+		r'^C:(.*)$',
+		r'/cygdrive/c\1',
+		'/'.join(re.split(r'\\', winpath))
+	)
+
+
 def deploy():
 	if MODE_QUIET == True:
 		sys.stdout = open(os.devnull, 'w')
@@ -410,39 +415,43 @@ def deploy():
 	}
 	if AUTOSTART == False:
 		PLAYBOOK_VARS['app_autostart'] = False
-  
-	# combine any vars into ansible variable string
-	EXTRA_VARS = "" if not bool(PLAYBOOK_VARS) \
-		            else "--extra-vars '{}'".format(json.dumps(PLAYBOOK_VARS, separators=(',', ':')))
-
-	# Set to shell environmental variable formatting
-	ENV_VARS = "ANSIBLE_CONFIG={}".format(ANSIBLE_CONFIG)
 
 	if os_version == 'Windows':
 		if not debug:
 			eprint("Windows is not yet supported")
 			raise(Exception())
-		## *****************************
-		##  UNTESTED FUNCTIONALITY
-		## *****************************
-		# Add env variables in Powershell?
+		
+		# Convert path to cygwin path
+		PLAYBOOK_VARS['local_project_dir'] = win2posixpaths(PLAYBOOK_VARS['local_project_dir'])
+
+		# combine any vars into ansible variable string
+		EXTRA_VARS = "" if not bool(PLAYBOOK_VARS) \
+						else "--extra-vars '{}'".format(json.dumps(PLAYBOOK_VARS, separators=(',', ':')))
+
+		# Set to shell environmental variable formatting
+		ENV_VARS = 'ANSIBLE_CONFIG="{}"'.format(win2posixpaths(ANSIBLE_CONFIG))
+
+		cygwin_bash = os.path.join(os.path.abspath(os.sep),'cygwin64','bin',"bash.exe")
 		ext_cmd = [ 
-			'C:\cygwin64\bin\bash.exe', '-c'
-			'. $HOME/.bash_profile && '								# load bash configuration
+			cygwin_bash, '-c',
+			". $HOME/.bash_profile && "								# load bash configuration
 		   +'{env} ansible-playbook {extrav} "{playbook}"'.format(
 				env = ENV_VARS,
 				extrav = EXTRA_VARS,
-				playbook = re.sub(						# Find playbook at cygwin special mount location 
-					r'^C:(.*)$',
-					r'/cygwin/c/\\1', 
-					'/'.join(re.split(r'\\',DEPLOYMENT_FILE))		# switch back to POSIX paths for bash.exe
-				)
+				playbook = win2posixpaths(DEPLOYMENT_FILE)  # Find playbook at cygwin special mount location & switch back to POSIX paths for bash.exe
 			)
 		]
 		is_shellcmd = False
 
 	elif os_version == 'Linux' or os_version == 'Darwin':
-		# /bin/bash -c "$ENV_VARS ansible-playbook $EXTRA_VARS $DIRNAME/scripts/ansible/deploy-app-vm.yml" &
+
+		# combine any vars into ansible variable string
+		EXTRA_VARS = "" if not bool(PLAYBOOK_VARS) \
+						else "--extra-vars '{}'".format(json.dumps(PLAYBOOK_VARS, separators=(',', ':')))
+
+		# Set to shell environmental variable formatting
+		ENV_VARS = "ANSIBLE_CONFIG={}".format(ANSIBLE_CONFIG)
+
 		ext_cmd = [
 			"{0} ansible-playbook {1} {2}".format(ENV_VARS,EXTRA_VARS,DEPLOYMENT_FILE)
 		]
@@ -571,6 +580,8 @@ def keep_awake(caffeinatedFn):
 			caffeinatedFn()			# run with energy
 		finally:
 			energy.kill()			# kill caffeinate function no matter what
+			if VERBOSE:
+				print("VERBOSE: Power Plan re-enabled.")
 		return
 		
 	else:
@@ -615,6 +626,11 @@ if __name__ == "__main__":
 
 	except KeyboardInterrupt as usr_canx:
 		eprint('\n'+"User interrupted deploy process.  Exiting...")
-		exit(1)	
+		exit(1)
+	except Exception as err:
+		eprint('\n{}\n'.format(err))
+		if debug:
+			traceback.print_exception(type(err), err, err.__traceback__)
+		exit(1)
 	else:
 		exit(0)
