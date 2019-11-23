@@ -57,7 +57,7 @@ $> python $proj/scripts/build.py
         4. Anaconda installation adds a profile.ps1 file to your `C:\Users\<user>\Documents\WindowsPowerShell\` directory.  In order to enable PowerShell to use this profile, you need to add a command to also load conda's profile.ps1 into your Microsoft.PowerShell_profile.ps1 file.  To do this, Open the default profile with a Text Editor like Notepad.exe.
 
             ```powershell
-            PS C:\> notepad.exe $HOME\Documents\WindowsPowerShell\Microsoft.PowerShell_profile.ps1
+            PS C:\> notepad.exe $PROFILE
             ```
 
             Add the following to the default profile:
@@ -72,8 +72,8 @@ $> python $proj/scripts/build.py
         5. Tell Windows to trust your new PowerShell profile & Conda's activation script
 
             ```powershell
-            PS C:\> Unblock-File -Path $HOME\Documents\WindowsPowerShell\Microsoft.PowerShell_profile.ps1
-            PS C:\> Unblock-File -Path $HOME\Documents\WindowsPowerShell\profile.ps1
+            PS C:\> Unblock-File -Path $PROFILE
+            PS C:\> Unblock-File -Path $PROFILE\..\profile.ps1
             ```
 
         6. To enable scripts to be run in PowerShell you will need to enable them with the following command.  Windows blocks script execution by default.  This is sometimes considered a security concern so once you are finished running scripts, you should reverse the command to an execution policy of 'Restricted'
@@ -165,7 +165,7 @@ PS C:\> python $proj\scripts\deploy_vm.py
         9. You’ll then be provided with a list of packages which you can download. Don’t select anything, just click “Next”. Doing so will result in the default applications being installed.
         10. When asking if you want to install dependencies, leave everything as their defaults and click “Next”. This will install everything you need to get Cygwin up and running.
         11. Once installation has completed, double-click the "Cygwin64 Terminal" shortcut from the desktop (MUST DO ON FIRST EXECUTION for proper configuration).  You won't need it for the rest of these instructions after the initial open.
-        12. Close the cygwin terminal and open PowerShell to run the cygwin_configure.py configuration script
+        12. Close the cygwin terminal. Open and run PowerShell as Administrator to run the cygwin_configure.py configuration script
 
             ```powershell
             PS C:\> python $proj\scripts\cygwin_configure.py
