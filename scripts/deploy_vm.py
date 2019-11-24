@@ -283,30 +283,32 @@ def deploy():
 	if DESTROY == True:
 		ANSIBLE_CONFIG = os.path.join(DIRNAME,"scripts","ansible","ansible.cfg")
 		PLAYBOOK_FILE = os.path.join(DIRNAME,"scripts","ansible","cleanup.yml")
-		ENV_VARS = "ANSIBLE_CONFIG={}".format(ANSIBLE_CONFIG)
 
 		if os_version == 'Windows':
 			if not debug:
 				eprint("Windows is not yet supported")
 				raise(Exception())
-			## *****************************
-			##  UNTESTED FUNCTIONALITY
-			## *****************************
+			ENV_VARS = 'ANSIBLE_CONFIG="{}"'.format(win2posixpaths(ANSIBLE_CONFIG))
+
+
+			cygwin_bash = os.path.join(os.path.abspath(os.sep),'cygwin64','bin',"bash.exe")
 			ext_cmd = [ 
-				'C:\cygwin64\bin\bash.exe', '-c'
-				'. $HOME/.bash_profile && '								# load bash configuration
-			   +'{env} ansible-playbook "{playbook}"'.format(
-					env = ENV_VARS,
-					playbook = re.sub(						# Find playbook at cygwin special mount location 
-						r'^C:(.*)$',
-						r'/cygwin/c/\\1', 
-						'/'.join(re.split(r'\\',PLAYBOOK_FILE))		# switch back to POSIX paths for bash.exe
+				cygwin_bash, '-c',
+				' '.join([							# merge multi-step command
+					'. $HOME/.bash_profile',					# load bash configuration
+					'&&',
+					'{env} ansible-playbook {sshargs} "{playbook}"'.format(
+						env = ENV_VARS,
+						sshargs = SSH_EXTRA_VARS,
+						playbook = win2posixpaths(PLAYBOOK_FILE) 
 					)
-				)
+				])
 			]
 			is_shellcmd = False
 
 		elif os_version == 'Linux' or os_version == 'Darwin':
+
+			ENV_VARS = 'ANSIBLE_CONFIG="{}"'.format(ANSIBLE_CONFIG)
 			# /bin/bash -c "$ENV_VARS ansible-playbook $DIRNAME/scripts/ansible/cleanup.yml" &
 			ext_cmd = [
 				'{0} ansible-playbook {1}'.format(ENV_VARS,PLAYBOOK_FILE)
