@@ -1,0 +1,44 @@
+---
+# local preparation
+- name: Load password hashes
+  hosts: local
+  gather_facts: True
+  tasks:
+    - name: Load password file
+      no_log: yes
+      include_vars:
+        file: etc_vars/secrets.yml
+        name: diary
+    
+    - set_fact:
+        is_cygwin: "{{ True if ansible_facts['distribution'] is regex('^CYGWIN_NT.*') else False | bool }}"
+
+    - name: Hash all passwords (cygwin)
+      shell: "/usr/bin/echo {{ item.value }} | /usr/bin/shasum -a 512 | /usr/bin/awk -F \"[ ]\" '{print $1}'"
+      no_log: True
+      become: False
+      register: hashactions_cygwin
+      loop: "{{ diary | dict2items }}"
+      when: is_cygwin
+
+    - name: Hash all passwords (MacOSX, Linux, etc.)
+      local_action: "command echo {{ item.value | password_hash('sha512') }}"
+      become: False
+      no_log: True
+      register: hashactions_regular
+      loop: "{{ diary | dict2items }}"
+      when: not is_cygwin
+
+    - name: Create pwhashes ansible_fact dictionary
+      set_fact:
+        pwhashes: "{{ (pwhashes|default({})) | combine({ item.item.key: item.stdout }) }}"
+      loop: "{{ hashactions_regular.results if not is_cygwin else hashactions_cygwin.results }}"
+      no_log: True
+      when: item.rc == 0
+      
+    - debug:
+        verbosity: 3
+        msg: 
+          - "DEBUG: pwhashes = "
+          - "{{ pwhashes }}"
+
