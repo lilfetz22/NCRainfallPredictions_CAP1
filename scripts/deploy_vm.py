@@ -324,7 +324,7 @@ def deploy():
 				ext_cmd,
 				shell=is_shellcmd,
 			)
-			maximum_runtime = 60*5  # 5 min
+			maximum_runtime = 60*10  # 10 min
 			try:
 				p.wait(timeout=maximum_runtime)
 			except subprocess.TimeoutExpired as err:
@@ -424,22 +424,27 @@ def deploy():
 		# Convert path to cygwin path
 		PLAYBOOK_VARS['local_project_dir'] = win2posixpaths(PLAYBOOK_VARS['local_project_dir'])
 
-		# combine any vars into ansible variable string
-		EXTRA_VARS = "" if not bool(PLAYBOOK_VARS) \
-						else "--extra-vars '{}'".format(json.dumps(PLAYBOOK_VARS, separators=(',', ':')))
 
 		# Set to shell environmental variable formatting
 		ENV_VARS = 'ANSIBLE_CONFIG="{}"'.format(win2posixpaths(ANSIBLE_CONFIG))
 
+		# combine any vars into ansible variable string
+		EXTRA_VARS = "" if not bool(PLAYBOOK_VARS) \
+						else "--extra-vars '{}'".format(json.dumps(PLAYBOOK_VARS, separators=(',', ':')))
+
 		cygwin_bash = os.path.join(os.path.abspath(os.sep),'cygwin64','bin',"bash.exe")
 		ext_cmd = [ 
 			cygwin_bash, '-c',
-			". $HOME/.bash_profile && "								# load bash configuration
-		   +'{env} ansible-playbook {extrav} "{playbook}"'.format(
-				env = ENV_VARS,
-				extrav = EXTRA_VARS,
-				playbook = win2posixpaths(DEPLOYMENT_FILE)  # Find playbook at cygwin special mount location & switch back to POSIX paths for bash.exe
-			)
+			' '.join([								# Merge multi-step command
+				". $HOME/.bash_profile",					# load bash configuration
+				"&&",
+				'{env} ansible-playbook {extrav} {sshargs} "{playbook}"'.format(
+					env = ENV_VARS,
+					extrav = EXTRA_VARS,
+					sshargs = SSH_EXTRA_VARS,
+					playbook = win2posixpaths(DEPLOYMENT_FILE)  # Find playbook at cygwin special mount location & switch back to POSIX paths for bash.exe
+				),
+			])
 		]
 		is_shellcmd = False
 
@@ -469,9 +474,8 @@ def deploy():
 			ext_cmd,
 			shell=is_shellcmd,
 		)
-		maximum_runtime = 60*20  # 20 min
 		try:
-			p.wait(timeout=maximum_runtime)
+			p.wait()
 		except subprocess.TimeoutExpired as err:
 			p.kill()
 			raise(err)
