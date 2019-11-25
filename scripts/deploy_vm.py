@@ -108,7 +108,7 @@ def check_prereqs():
 
 
 	## Non-application based dependencies
-	secretsfile = os.path.join("scripts","ansible","roles","configure","vars","secrets.yml")
+	secretsfile = os.path.join("scripts","ansible","etc_vars","secrets.yml")
 	if os.path.isfile(secretsfile):
 		# Check for required fields
 		with open(secretsfile, 'rb', 0) as fsecrets, \
@@ -299,7 +299,7 @@ def deploy():
 					'&&',
 					'{env} ansible-playbook {sshargs} "{playbook}"'.format(
 						env = ENV_VARS,
-						sshargs = SSH_EXTRA_VARS,
+						sshargs = "", # SSH_EXTRA_VARS,
 						playbook = win2posixpaths(PLAYBOOK_FILE) 
 					)
 				])
@@ -443,7 +443,7 @@ def deploy():
 				'{env} ansible-playbook {extrav} {sshargs} "{playbook}"'.format(
 					env = ENV_VARS,
 					extrav = EXTRA_VARS,
-					sshargs = SSH_EXTRA_VARS,
+					sshargs = "", # SSH_EXTRA_VARS,
 					playbook = win2posixpaths(DEPLOYMENT_FILE)  # Find playbook at cygwin special mount location & switch back to POSIX paths for bash.exe
 				),
 			])

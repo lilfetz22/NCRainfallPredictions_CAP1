@@ -130,7 +130,7 @@ PS C:\> python $proj\scripts\deploy_vm.py
     1. Ansible & Jupyter installed on $PATH
     2. Configure `$proj/scripts/ansible/gce_vars/auth` parameters using a service account *.json
     3. Configure `$proj/scripts/ansible/group_vars/all` paremeters with ssh account key to service account.
-    4. Set Administrator password in the file `$proj/scripts/ansible/roles/configure/vars/secrets.yml`
+    4. Set Administrator password in the file `$proj/scripts/ansible/etc_vars/secrets.yml`
     5. `$proj/scripts/build.py` available
   </details>
 
@@ -140,7 +140,7 @@ PS C:\> python $proj\scripts\deploy_vm.py
     1. Conda environment enabled therefore Jupyter available on $env:Path
     2. Configure `$proj\scripts\ansible\gce_vars\auth` parameters using a service account *.json
     3. Configure `$proj\scripts\ansible\group_vars\all` paremeters with ssh account key to service account.
-    4. Set Administrator password in the file `$proj\scripts\ansible\roles\configure\vars\secrets.yml`
+    4. Set Administrator password in the file `$proj\scripts\ansible\etc_vars\secrets.yml`
     5. `$proj\scripts\build.py` available
     6. Make sure you have attempted a build with the above instructions to ensure your PowerShell environment is ready.
     7. Run the following command to tell Windows to trust the internal script without prompt.  This is required to allow the deployment script to run uninterrupted by idle mode.  Sleep functionalty will be re-enabled by the end of the deployment script.
