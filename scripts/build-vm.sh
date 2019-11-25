@@ -197,7 +197,7 @@ main() {
 		# ensure build files are up to date
 		echo "[VM BUILD] Running code build script...";
 		BUILD_SCRIPT_STARTS=$(timestamp)
-		BUILD_DIR="$BUILD_DIR" "$DIRNAME/scripts/build.sh" &
+		BUILD_DIR="$BUILD_DIR" "$DIRNAME/scripts/build.py" &
 		pid=$!
 		wait $pid || { echo "[VM BUILD] build failed. Aborting..." 2>&2 && echo && exit 1; }
 		BUILD_SCRIPT_STOPS=$(timestamp)
