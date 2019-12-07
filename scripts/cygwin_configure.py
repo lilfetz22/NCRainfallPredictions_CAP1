@@ -6,17 +6,17 @@ from os import sep as ossep
 from os import remove as del_file
 from os import listdir as ls
 from sys import stderr
+from sys import argv as argslist
 from getpass import getuser
 from shutil import move as mv
 from re import compile as regex
 from platform import system as get_os
 from time import sleep
-import sys
 import subprocess
 
 
 def eprint(*args, **kwargs):
-    print(*args, file=sys.stderr, flush=True, **kwargs)
+    print(*args, file=stderr, flush=True, **kwargs)
 
 def usage(printTo=""):
 	this_file = p.basename(p.abspath(__file__))
@@ -405,7 +405,16 @@ def install_ansible():
 	print("Installing Ansible...")
 	config_actions = [ 
 		{ 'fn'  : __install_ansible_dep, 'onerror':"FAILED: Dependency package installations into cygwin" },
-		{ 
+		# required python library for the gce ansible module's communication
+		{  
+			'cmd' : "pip install requests",
+			'onerror': "FAILED: pip installation of requests library into cygwin"
+		},
+		{
+			'cmd' : "pip install google-auth",
+			'onerror': "FAILED: pip installation of google-auth library into cygwin"
+		},
+		{
 			'cmd' : "pip install ansible",
 			'onerror':"FAILED: pip installation of Ansible into cygwin" 
 		}
@@ -431,7 +440,7 @@ def install_ansible():
 ## AS MAIN SCRIPT
 if __name__ == "__main__":
 
-	process_args(sys.argv)
+	process_args(argslist)
 
 	print("Checking script environment...")
 	compatible_os = regex(r'Windows')
