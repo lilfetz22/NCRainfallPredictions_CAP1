@@ -114,7 +114,7 @@ def check_prereqs():
 		# Check cygwin's package manager exists
 		pkgmgnr = p.join(dir_cygwin,'cyg-get',"cyg-pkg-mgnr.exe")
 		if not p.isfile(pkgmgnr):
-			eprint("MISSING PREREQ: cyg-pkg-mgnr.exe not found @ {}/".format(p.join(dir_cygwin, 'cyg-get')))
+			eprint("MISSING PREREQ: cyg-pkg-mgnr.exe not found @ {}".format(p.join(dir_cygwin, 'cyg-get')+ossep))
 			if p.isfile(p.join(p.dirname(pkgmgnr), 'setup-x86{}.exe'.format("_64" if is_64bit else ""))):
 				# HELPING: original download file found, not renamed.
 				eprint("  Please rename setup-x86{}.exe to cyg-pkg-mgnr.exe and try again.\n".format("_64" if is_64bit else ""))
@@ -430,8 +430,15 @@ def __install_ansible_dep():
 				raise(e)
 
 		if pipfinder.search(dep):
-			# add pip pointer
-			if __runcygcmd("ln -s /usr/bin/pip3 /usr/local/bin/pip") != 0:
+			# add pip pointer if it doesn't already exist
+			cygcmd = ' '.join([
+				"[ ! -f /usr/local/bin/pip ]",		# bash inline-if
+				"&&", # on true
+				"ln -s /usr/bin/pip3 /usr/local/bin/pip",
+				"||", # on false
+				"ls -l /usr/local/bin/pip"
+			])
+			if __runcygcmd(cygcmd) != 0:
 				raise( Exception("Failed to add pip symbolic link") )
 			else:
 				print("Created symlink to pip3 as at /usr/local/bin/pip")
@@ -486,6 +493,7 @@ def cygwin_configure():
 		{ 'fn':install_ansible, 'onerror':"FAILED: Ansible installation into cygwin" }
 	]
 
+	print('\n'+"Starting configuration of Cygwin...")
 	for action in config_actions:
 		try:
 			action['fn']()

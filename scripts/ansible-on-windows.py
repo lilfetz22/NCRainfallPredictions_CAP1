@@ -255,10 +255,10 @@ def setup_user():
 	cygwin_bash = p.join(dir_cygwin,'bin',"bash.exe")
 	cmds = [
 		# 1. create user directory
-		' '.join(['/bin/mkdir', '/home/"$(/bin/whoami)"']),
+		' '.join(['[ ! -d "$HOME" ]', '&&', '/bin/mkdir','"$HOME"', '||', '/bin/echo "HOME=$HOME"']),
 		# 2. add skeleton hidden files & ignoring any errors
 		' '.join(['/bin/echo', '-n', '$('+
-			' '.join(['/bin/cp', '/etc/skel/.*', '$HOME/', '2>/dev/null'])+  
+			' '.join(['/bin/cp','-v','/etc/skel/.*','$HOME/','2>/dev/null'])+  
 		')']),
 		# 3. add any skeleton non-hidden files & ignore not found error
 		' '.join(['/bin/echo', '-n','$('+
@@ -306,7 +306,6 @@ def verify_sign(public_key_loc, signature, data):
 	param: data object in base64 encoding
     return: Boolean. True if the signature is valid; False otherwise. 
     '''
-    return True
     # from Crypto.PublicKey import DSA 
     # from Crypto.Signature import DSS 
     # from Crypto.Hash import SHA256
@@ -318,7 +317,7 @@ def verify_sign(public_key_loc, signature, data):
     # digest.update(base64.b64decode(data)) 
     # if verifier.verify(digest, base64.b64decode(signature)):
     #     return True
-    # return False
+    return False
 
 
 def install_cygwin():
@@ -378,8 +377,19 @@ def install_cygwin():
 	def exe_download_handler(download,spec):
 		write2file(download, spec)
 		f = base64.b64encode(open(spec['output'],'rb').read())
-		if not verify_sign(public_key_file, vars['exe.sig'], f):
-			raise( Exception("INVALID SIGNATURE: downloaded {exe} failed verification".format(exe=spec['output'])) )
+		try:
+			if not verify_sign(public_key_file, vars['exe.sig'], f):
+				raise( Exception("INVALID SIGNATURE: downloaded {exe} failed verification".format(exe=spec['output'])) )
+		except:
+			eprint("WARNING: Unable to validate authenticity of {exe}".format(exe=spec['output']))
+			proceedregex = regex(r'^[ ]*(y|yes|Y|YES|Yes)[ ]*$')
+			cancelregex = regex(r'^[ ]*(n|no|N|NO|No)[ ]*$')
+			while True:
+				answer = input("Would you like to continue anyway (Y/n)?"+' ')
+				if cancelregex.match(answer):
+					raise(KeyboardInterrupt())
+				elif proceedregex.match(answer):
+					break
 
 	# Download the correct exe and signature file
 	base_url = 'https://www.cygwin.com'
