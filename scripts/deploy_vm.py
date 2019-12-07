@@ -85,7 +85,7 @@ def check_prereqs():
 	if os_version == 'Windows':
 		cygwin_bash = os.path.join(os.path.abspath(os.sep),'cygwin64','bin',"bash.exe")
 		prereqs = [
-			{ 'test' : ['powershell.exe', 'if (-not ([System.IO.File]::Exists("{0}"))) {{ throw "Error" }}'.format(cygwin_bash)], 'isshell':False, 'onerror':"\ncygwin64's bash.exe is not installed but is required." },
+			{ 'test' : ['powershell.exe', 'try {{ if (-not ([System.IO.File]::Exists("{0}"))) {{ throw "Error" }} }} catch {{ }};'.format(cygwin_bash)], 'isshell':False, 'onerror':"\ncygwin64's bash.exe is not installed but is required." },
 			{ 'test' : [cygwin_bash, '-c', ". $HOME/.bash_profile && command -v ls 1>/dev/null"], 'isshell':False, 'onerror': "cygwin's $PATH variable not configured. Check C:\cygwin64\home\<user>\.bash_profile" },
 			{ 'test' : [cygwin_bash, '-c', ". $HOME/.bash_profile && command -v ansible 1>/dev/null"], 'isshell':False, 'onerror': "ansible is not installed but is required." }
 		]
@@ -188,7 +188,7 @@ def process_args( argslist ):
 	}
 
 	# Dynamically finds other alternatives from spec ^
-	compressedflags = list(filter(lambda opt: re.search(r'^-[^-][^=]*$', opt), switcher.keys()))
+	compressedflags = list(filter(lambda opt: re.search(r'^-[^-](?!=)$', opt), switcher.keys()))
 	compressedflags = [re.sub(r'^-(.*)$', '\\1', i) for i in compressedflags]		# removes the hyphen
 	if len(compressedflags) > 1:
 		compressedflagsregex = re.compile("^-["+''.join(compressedflags)+"]{2,"+str(len(compressedflags))+"}$")
