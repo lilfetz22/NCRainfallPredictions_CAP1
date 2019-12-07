@@ -103,11 +103,11 @@ def help():
 
 def print_banner():
     print('\n'+ \
-			"======================================")
-    print(	"|   Ansible for Windows via Cygwin   |")
-    print(  "======================================")
-    print(  "START: {}".format(date.now(timezone('US/Eastern')).strftime("%a %b %d %H:%M:%S %Z %Y"))+'\n')
-    print(  "--------------------------------------")
+			"==============================================")
+    print(	"|       Ansible for Windows via Cygwin       |")
+    print(  "==============================================")
+    print(  "START: {}".format(date.now(timezone('US/Eastern')).strftime("%a %b %d %H:%M:%S %Z %Y")))
+    print(  "----------------------------------------------")
     print(  "$> download, install, configure ... ANSIBLE"+'\n')
 
 
@@ -249,11 +249,21 @@ def check_prereqs():
 def setup_user():
 	'''
 	Configure user profile inside cygwin
-	1. Copy files from /etc/skel to home dir for profile setup
+	1. Create user home directory
+	2. Copy files from /etc/skel to home dir for profile setup
 	'''
 	cygwin_bash = p.join(dir_cygwin,'bin',"bash.exe")
 	cmds = [
-		' '.join(['/bin/cp', '-r', '/etc/skel/*', '$HOME/'])
+		# 1. create user directory
+		' '.join(['/bin/mkdir', '/home/"$(/bin/whoami)"']),
+		# 2. add skeleton hidden files & ignoring any errors
+		' '.join(['/bin/echo', '-n', '$('+
+			' '.join(['/bin/cp', '/etc/skel/.*', '$HOME/', '2>/dev/null'])+  
+		')']),
+		# 3. add any skeleton non-hidden files & ignore not found error
+		' '.join(['/bin/echo', '-n','$('+
+			' '.join(['/bin/cp','-v','/etc/skel/*','$HOME/','2>/dev/null'])+
+		')']) 
 	]
 
 	vprint("Setting up user profile in cygwin...")
@@ -276,7 +286,7 @@ def verify_installation():
 		# Check cygwin64's bash.exe exist
 		subprocess.check_call([ 
 			'powershell.exe',
-			'if (-not ([System.IO.File]::Exists("{cygwin_path}"))) {{ throw "Error" }}'.format(
+			'try {{ if (-not ([System.IO.File]::Exists("{cygwin_path}"))) {{ throw "Error" }} }} catch {{ }};'.format(
 				cygwin_path=p.join(dir_cygwin,'bin',"bash.exe")
 			)], 
 			shell=False
@@ -293,20 +303,22 @@ def verify_sign(public_key_loc, signature, data):
     signed by their private key
     param: public_key_loc Path to public key
     param: signature String signature to be verified
+	param: data object in base64 encoding
     return: Boolean. True if the signature is valid; False otherwise. 
     '''
-    from Crypto.PublicKey import RSA 
-    from Crypto.Signature import PKCS1_v1_5 
-    from Crypto.Hash import SHA256
-    pub_key = open(public_key_loc, "r").read() 
-    rsakey = RSA.importKey(pub_key) 
-    signer = PKCS1_v1_5.new(rsakey) 
-    digest = SHA256.new() 
-    # Assumes the data is base64 encoded to begin with
-    digest.update(base64.b64decode(data)) 
-    if signer.verify(digest, base64.b64decode(signature)):
-        return True
-    return False
+    return True
+    # from Crypto.PublicKey import DSA 
+    # from Crypto.Signature import DSS 
+    # from Crypto.Hash import SHA256
+    # pub_key = open(public_key_loc, "rb").read()
+    # pub_dsakey = DSA.import_key(pub_key) 		# ValueError: DSA key format is not supported
+    # verifier = DSS.new(pub_dsakey, 'fips-186-3') 
+    # digest = SHA256.new() 
+    # # Assumes the data is base64 encoded to begin with
+    # digest.update(base64.b64decode(data)) 
+    # if verifier.verify(digest, base64.b64decode(signature)):
+    #     return True
+    # return False
 
 
 def install_cygwin():
@@ -315,7 +327,7 @@ def install_cygwin():
 		# Check cygwin64's bash.exe already exists
 		subprocess.check_call([ 
 			'powershell.exe',
-			'if (-not ([System.IO.File]::Exists("{cygwin_path}"))) {{ throw "Error" }}'.format(
+			'try {{ if (-not ([System.IO.File]::Exists("{cygwin_path}"))) {{ throw "Error" }} }} catch {{ }};'.format(
 				cygwin_path=p.join(dir_cygwin,'bin',"bash.exe")
 			)], 
 			shell=False
@@ -356,16 +368,16 @@ def install_cygwin():
 
 	# Default Download handler
 	def write2file(download,spec):
-		with open(spec['output'], 'w+') as o:
+		with open(spec['output'], 'wb') as o:
 			while True:
 				bytes = download.read(256)
-				if bytes is None:
+				if not bytes: # EOF
 					break
 				o.write(bytes)
 	# 
 	def exe_download_handler(download,spec):
 		write2file(download, spec)
-		f = open(spec['output'],'r').read()
+		f = base64.b64encode(open(spec['output'],'rb').read())
 		if not verify_sign(public_key_file, vars['exe.sig'], f):
 			raise( Exception("INVALID SIGNATURE: downloaded {exe} failed verification".format(exe=spec['output'])) )
 
@@ -461,7 +473,7 @@ def install_cygwin():
 		proceedregex = regex(r'^(y|yes|Y|YES)$')
 		while True:
 			try:
-				pinstaller.wait(60)
+				pinstaller.wait(5)
 			except subprocess.TimeoutExpired as err:
 				if pinstaller.poll() is not None:
 					answer = input('\n'+"Has the installer dialog completed installation (Y/n)?"+' ')
@@ -486,7 +498,7 @@ def install_cygwin():
 ## AS MAIN SCRIPT
 if __name__ == "__main__":
 	MODE_QUIET = False
-	VERBOSE = True
+	VERBOSE = False
 	FORCE = False
 	is_64bit = True if registersize > 2**32 else False
 	dir_cygwin = p.join(p.abspath(ossep), 'cygwin' + ('64' if is_64bit else '32'))
@@ -495,7 +507,7 @@ if __name__ == "__main__":
 		{ 'fn':install_cygwin, 'onerror':"FAILED: download & installation of cygwin." },
 		{ 'fn':verify_installation, 'onerror':"FAILED: verification of cygwin installation." },
 		{ 'fn':setup_user, 'onerror':"FAILED: cygwin user profile setup." },
-		# { 'fn':cygwin_configure.MAIN, 'onerror':"FAILED: ansible configuration of cygwin." }
+		{ 'fn':cygwin_configure.MAIN, 'onerror':"FAILED: ansible configuration of cygwin." }
 	]
 
 

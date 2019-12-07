@@ -160,7 +160,7 @@ PS C:\> python $proj\scripts\deploy_vm.py
             PS C:\> python $proj\scripts\ansible-on-windows.py
             ```
           
-            This script automates all the steps for you to download, verify, install, and configure ansible and its dependencies for Windows.  Use `-v` verbose levels to see complete steps.  Please note: you may have to install the package 'pytz' for your python environment `pip install pytz`.
+            This script automates all the steps for you to download, verify, install, and configure ansible and its dependencies for Windows.  Use `-v` verbose levels to see complete steps.  Please note: you may have to install the packages 'pytz' & 'pycryptodome' for your python environment `pip install pytz pycryptodome`.
 
         2. When required, use the following instructions for the install wizard.
         3. When asked which download source you’d like to use, select “Install from Internet”.
