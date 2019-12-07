@@ -151,7 +151,15 @@ PS C:\> python $proj\scripts\deploy_vm.py
         PS C:\> Unblock-File -Path $proj\scripts\SuspendPowerPlan.ps1
         ```
 
-    8. Install ansible in a [Cygwin](https://www.cygwin.com/) environment
+    8. Open `$proj\scripts\ansible\ansible.cfg` and uncomment the line under ssh_connection heading for ssh_args.  Cygwin does not handle the control channel concept of ansible's default.  It should look like the following for Windows execution.
+
+        ```text
+        [ssh_connection]
+        #ssh_args = -C -o ControlMaster=auto -o ControlPersist=60s    # ansible default value
+        ssh_args = -o Compression=yes -o ControlMaster=no             # uncomment this line for Microsft Windows
+        ```
+    
+    9. Install ansible in a [Cygwin](https://www.cygwin.com/) environment
 
         <details>
            <summary>TO INSTALL Ansible on Windows Cygwin Environment</summary>
