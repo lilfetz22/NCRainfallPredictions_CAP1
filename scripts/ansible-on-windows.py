@@ -283,7 +283,7 @@ def verify_installation():
 		)
 
 	except subprocess.CalledProcessError:
-		eprint("INSTALLATION FAILED: cygwin's bash.exe not found @ {}/".format(p.join(p.abspath(ossep),'cygwin64')))
+		eprint("INSTALLATION FAILED: cygwin's bash.exe not found @ {}/".format(p.join(dir_cygwin,'bin')))
 		exit(-2)
 
 
