@@ -6,6 +6,8 @@ Due to the fact, the Ansible controller does not support the Windows platform, t
 
 For simplicity, the instructions will define the variable `$proj = <project_root_dir>` so all filepaths that use `$proj/` are a symbolic path from the main project's root directory.
 
+Unless otherwise specified, all commands are expected to be executed in terminal for MacOS/Linux or Powershell in Windows.
+
 ----
 
 ## BUILD
@@ -118,7 +120,7 @@ $> python $proj/scripts/deploy_vm.py
 PS C:\> python $proj\scripts\deploy_vm.py
 ```
 
-`--help` option will describe how to use the script.
+`--help` option will describe how to use the script.  Administrative privileges are not required or recommended.
 
 
 <details>
@@ -143,35 +145,34 @@ PS C:\> python $proj\scripts\deploy_vm.py
     4. Set Administrator password in the file `$proj\scripts\ansible\etc_vars\secrets.yml`
     5. `$proj\scripts\build.py` available
     6. Make sure you have attempted a build with the above instructions to ensure your PowerShell environment is ready.
-    7. Run the following command to tell Windows to trust the internal script without prompt.  This is required to allow the deployment script to run uninterrupted by idle mode.  Sleep functionalty will be re-enabled by the end of the deployment script.
+    7. Run the following Powershell command to tell Windows to trust the internal script without prompt.  This is required to allow the deployment script to run uninterrupted by idle mode.  Sleep functionalty will be re-enabled by the end of the deployment script.
 
         ```powershell
         PS C:\> Unblock-File -Path $proj\scripts\SuspendPowerPlan.ps1
         ```
 
-    8. Install ansible in a cygwin environment
+    8. Install ansible in a [Cygwin](https://www.cygwin.com/) environment
 
         <details>
            <summary>TO INSTALL Ansible on Windows Cygwin Environment</summary>
 
-        1. Download [Cygwin](https://www.cygwin.com/).
-        2. Move the downloaded setup file to `C:\cygwin64\cyg-get\`
-        3. Run the Cygwin installation file.
-        4. When asked which download source you’d like to use, select “Install from Internet”.
-        5. When asked for installation location, set it to, `C:\cygwin64`. **This is required for the cygwin_configure.py and deploy_vm.py scripts to find Cygwin.**
-        6. When asked where to install local packages, set it to `C:\cygwin64\cyg-get\`.
-        7. Select the method which suits your internet connection type. e.g If you’re not connecting from behind a proxy, select the default "Use System Proxy Settings" or if needed "Direct Connection".
-        8. Select a mirror to download your packages from. Any option in the list will do, I choose an USA host usually *.edu.
-        9. You’ll then be provided with a list of packages which you can download. Don’t select anything, just click “Next”. Doing so will result in the default applications being installed.
-        10. When asking if you want to install dependencies, leave everything as their defaults and click “Next”. This will install everything you need to get Cygwin up and running.
-        11. Once installation has completed, double-click the "Cygwin64 Terminal" shortcut from the desktop (MUST DO ON FIRST EXECUTION for proper configuration).  You won't need it for the rest of these instructions after the initial open.
-        12. Close the cygwin terminal. Open and run PowerShell as Administrator to run the cygwin_configure.py configuration script
+        1. From an Administrator Powershell, Run install script with the command (see `--help` for options):
 
             ```powershell
-            PS C:\> python $proj\scripts\cygwin_configure.py
+            PS C:\> python $proj\scripts\ansible-on-windows.py
             ```
+          
+            This script automates all the steps for you to download, verify, install, and configure ansible and its dependencies for Windows.  Use `-v` verbose levels to see complete steps.  Please note: you may have to install the packages 'pytz' & 'pycryptodome' for your python environment `pip install pytz pycryptodome`.
 
-        13. Upon completion with no errors, you can now use Ansible through Cygwin.
+        2. When required, use the following instructions for the install wizard.
+        3. When asked which download source you’d like to use, select “Install from Internet”.
+        4. When asked for installation location, set it to, `C:\cygwin64`. **This is required for the cygwin_configure.py and deploy_vm.py scripts to find Cygwin.**
+        5. When asked where to install local packages, set it to `C:\cygwin64\cyg-get\`.
+        6. Select the method which suits your internet connection type. e.g If you’re not connecting from behind a proxy, select the default "Use System Proxy Settings" or if needed "Direct Connection".
+        7. Select a mirror to download your packages from. Any option in the list will do, I choose an USA host usually *.edu.
+        8. You’ll then be provided with a list of packages which you can download. Don’t select anything, just click “Next”. Doing so will result in the default applications being installed.
+        9. When asking if you want to install dependencies, leave everything as their defaults and click “Next”. This will install everything you need to get Cygwin up and running.
+        10. Upon completion with no errors, you can now use Ansible through Cygwin.  You can now close (`exit`)the Powershell window since Administrative privileges is not required to run build or deploy scripts.
         
         &nbsp;
         **Note: You may access Cygwin inside of PowerShell with the following:**

@@ -7,6 +7,7 @@ from os import remove as del_file
 from os import listdir as ls
 from sys import stderr
 from sys import argv as argslist
+from sys import maxsize as registersize
 from getpass import getuser
 from shutil import move as mv
 from re import compile as regex
@@ -26,8 +27,8 @@ def usage(printTo=""):
 
 def help():
     print("")
-    print(" Ansible on Cygwin64 Configuration Script ")
-    print("------------------------------------------")
+    print(" Ansible on Cygwin Configuration Script ")
+    print("----------------------------------------")
     print("This script simplifies the user burden of manually installing each "+
 		  "package into cygwin.  This will execute the commands to set up the "+
 		  "package alias and $PATH variable in ~/.bash_profile & ~/.bashrc.  Then "+
@@ -37,7 +38,8 @@ def help():
 		  "Requirements: \n"+
 		  "   1. Run with Administrator privileges.\n"+
 		  "   2. Run from Windows OS proper (PowerShell recommended)\n"+
-		  "   3. Cygwin installed at C:\\cygwin64\\ "+
+		  "   3. Cygwin installed at {}".format(dir_cygwin)+
+		  "   4. Cygwin installer (setup*.exe) stored as {}".format(dir_cygwin, 'cyg-get', 'cyg-pkg-mgnr.exe')+
 		  '\n')
     try: 
         usage(printTo="stdout")
@@ -82,16 +84,55 @@ def process_args( args ):
 	## // IF-statements to fill all vars with defaults if not already filled // ##
 
 
+def check_prereqs():
+	print("Checking script environment...")
+	compatible_os = regex(r'Windows')
+	if not compatible_os.match(get_os()):
+		eprint("FAILED: This script only works on Windows with cygwin installed.")
+		exit(-1)
+	else:
+		try:
+			# Check cygwin's bash.exe exist
+			subprocess.check_call([ 
+				'powershell.exe',
+				'try {{ if (-not ([System.IO.File]::Exists("{cygwin_path}"))) {{ throw "Error" }} }} catch {{ }};'.format(
+					cygwin_path=p.join(dir_cygwin,'bin',"bash.exe")
+				)], 
+				shell=False
+			)
+			# Check running as administrator (only Administrator rights can see the temp dir)
+			ls(p.join(ossep, 'Windows', 'temp'))
+
+		except subprocess.CalledProcessError:
+			eprint("MISSING PREREQ: cygwin not found @ {}/".format(dir_cygwin))
+			exit(-2)
+		except PermissionError:
+			eprint('\n'+"FAILED: Script needs to be run with administrator privileges.")
+			eprint("PowerShell w/ Admin Privalages command: \n\t Start-Process powershell -Verb RunAs")
+			exit(-3)
+		
+		# Check cygwin's package manager exists
+		pkgmgnr = p.join(dir_cygwin,'cyg-get',"cyg-pkg-mgnr.exe")
+		if not p.isfile(pkgmgnr):
+			eprint("MISSING PREREQ: cyg-pkg-mgnr.exe not found @ {}".format(p.join(dir_cygwin, 'cyg-get')+ossep))
+			if p.isfile(p.join(p.dirname(pkgmgnr), 'setup-x86{}.exe'.format("_64" if is_64bit else ""))):
+				# HELPING: original download file found, not renamed.
+				eprint("  Please rename setup-x86{}.exe to cyg-pkg-mgnr.exe and try again.\n".format("_64" if is_64bit else ""))
+			exit(-4)
+
+	# VALID Environment
+	print("PASS")
+
 
 ## ACTION FUNCTION
 ## Configure aliases in ~/.bashrc
 ##   - package manager alias
 def add_alias():
 	print("Adding aliases...")
-	profile_filename = p.join(p.abspath(ossep),'cygwin64','home',getuser(),'.bashrc')
-	tmp_filename = p.join(p.abspath(ossep),'cygwin64','home',getuser(),'.~$.bashrc')
+	profile_filename = p.join(dir_cygwin,'home',getuser(),'.bashrc')
+	tmp_filename = p.join(dir_cygwin,'home',getuser(),'.~$.bashrc')
 
-	pkgmgnr_alias = 'alias cyg-get="/cyg-get/setup-x86_64.exe -q -P"'
+	pkgmgnr_alias = 'alias cyg-get="/cyg-get/cyg-pkg-mgnr.exe -q -P"'
 	lines2write = [
 		"# Set alias for cygwin's package manager",
 		pkgmgnr_alias,
@@ -147,8 +188,8 @@ def configure_path():
 	line2match = regex(r'^# Set PATH so it includes user\'s private bin')
 	prev_complete_match = regex(r'^'+lines2write[0]) 
 
-	bashprofilefile = p.join(p.abspath(ossep),'cygwin64','home',getuser(),'.bash_profile')
-	tmpfile = p.join(p.abspath(ossep),'cygwin64','home',getuser(),'.~$.bash_profile')
+	bashprofilefile = p.join(dir_cygwin,'home',getuser(),'.bash_profile')
+	tmpfile = p.join(dir_cygwin,'home',getuser(),'.~$.bash_profile')
 
 	def insertPathConfig(line, newfile, logdata):
 		if 'found' not in logdata:
@@ -231,7 +272,7 @@ def __modifyfile(filename, tmpfilename, processline_Fn):
 ## HELPER FUNCTION
 ## Spawn a subprocess that will execute in cygwin's bash.exe
 def __runcygcmd(cygcmd=""):
-	cygwin_bash = p.join(p.abspath(ossep),'cygwin64','bin',"bash.exe")
+	cygwin_bash = p.join(dir_cygwin,'bin',"bash.exe")
 	if cygcmd == "":
 		raise(Exception("__runcygcmd(): no command provided."))
 
@@ -266,7 +307,7 @@ def __runcygcmd(cygcmd=""):
 ## HELPER FUNCTION
 ## Spawn a subprocess that will run a check for an installed package
 def __is_pkg_installed(pkgname=""):
-	cygwin_bash = p.join(p.abspath(ossep),'cygwin64','bin',"bash.exe")
+	cygwin_bash = p.join(dir_cygwin,'bin',"bash.exe")
 	if pkgname == "":
 		raise(Exception("__is_pkg_installed(): no command provided."))
 
@@ -311,7 +352,7 @@ def install_utilities():
 
 				else:  # likely step 1
 					print("Installing {}...".format(utility['pkg']))
-					exitcode = __runcygcmd("/cyg-get/setup-x86_64.exe -q -P {}".format(utility['pkg']))
+					exitcode = __runcygcmd("/cyg-get/cyg-pkg-mgnr.exe -q -P {}".format(utility['pkg']))
 					if exitcode != 0:
 						raise( subprocess.SubprocessError("Utility '{}' returned a failed exit status ({})".format(utility['pkg'], exitcode)) )
 					else:
@@ -371,7 +412,7 @@ def __install_ansible_dep():
 				
 				else:  # likely step 1
 					print("Installing {}...".format(dep))
-					exitcode = __runcygcmd("/cyg-get/setup-x86_64.exe -q -P {}".format(dep))
+					exitcode = __runcygcmd("/cyg-get/cyg-pkg-mgnr.exe -q -P {}".format(dep))
 					if exitcode != 0:
 						raise( subprocess.SubprocessError("Dependency '{}' returned a failed exit status ({})".format(dep, exitcode)) )
 					else:
@@ -389,8 +430,15 @@ def __install_ansible_dep():
 				raise(e)
 
 		if pipfinder.search(dep):
-			# add pip pointer
-			if __runcygcmd("ln -s /usr/bin/pip3 /usr/local/bin/pip") != 0:
+			# add pip pointer if it doesn't already exist
+			cygcmd = ' '.join([
+				"[ ! -f /usr/local/bin/pip ]",		# bash inline-if
+				"&&", # on true
+				"ln -s /usr/bin/pip3 /usr/local/bin/pip",
+				"||", # on false
+				"ls -l /usr/local/bin/pip"
+			])
+			if __runcygcmd(cygcmd) != 0:
 				raise( Exception("Failed to add pip symbolic link") )
 			else:
 				print("Created symlink to pip3 as at /usr/local/bin/pip")
@@ -437,42 +485,7 @@ def install_ansible():
 	print("SUCCESS: Ansible installed")
 
 
-## AS MAIN SCRIPT
-if __name__ == "__main__":
-
-	process_args(argslist)
-
-	print("Checking script environment...")
-	compatible_os = regex(r'Windows')
-	if not compatible_os.match(get_os()):
-		eprint("FAILED: This script only works on Windows with cygwin installed.")
-		exit(-1)
-	else:
-		try:
-			# Check cygwin64's bash.exe exist
-			subprocess.check_call([ 
-				'powershell.exe',
-				'if (-not ([System.IO.File]::Exists("{cygwin_path}"))) {{ throw "Error" }}'.format(
-					cygwin_path=p.join(p.abspath(ossep),'cygwin64','bin',"bash.exe")
-				)], 
-				shell=False
-			)
-			# Check running as administrator (only Administrator rights can see the temp dir)
-			ls(p.join(ossep, 'Windows', 'temp'))
-
-		except subprocess.CalledProcessError:
-			eprint("MISSING PREREQ: cygwin not found @ {}/".format(p.join(p.abspath(ossep),'cygwin64')))
-			exit(-2)
-		except PermissionError:
-			eprint('\n'+"FAILED: Script needs to be run with administrator privileges.")
-			eprint("PowerShell w/ Admin Privalages command: \n\t Start-Process powershell -Verb RunAs")
-			exit(-3)
-		except KeyboardInterrupt as usr_canx:
-			eprint('\n'+"User interrupted configuration process.  Exiting...")
-			exit(1)
-
-	# VALID Environment
-	print("PASS")
+def cygwin_configure():
 	config_actions = [ 
 		{ 'fn':install_utilities, 'onerror':"FAILED: installation of utilities in cygwin" },
 		{ 'fn':configure_path, 'onerror':"FAILED: configuration of $PATH variable in cygwin" },
@@ -480,10 +493,11 @@ if __name__ == "__main__":
 		{ 'fn':install_ansible, 'onerror':"FAILED: Ansible installation into cygwin" }
 	]
 
+	print('\n'+"Starting configuration of Cygwin...")
 	for action in config_actions:
 		try:
 			action['fn']()
-		except KeyboardInterrupt as usr_canx:
+		except KeyboardInterrupt:
 			eprint('\n'+"User interrupted configuration process.  Exiting...")
 			exit(1)
 		except:
@@ -503,3 +517,21 @@ if __name__ == "__main__":
 			  "if still is an issue, "+
 			  "please submit a issue to github.com/codejedi365/CapstoneProject1.", file=stderr, flush=True)
 		exit(2)
+
+
+## AS MAIN SCRIPT
+if __name__ == "__main__":
+	is_64bit = True if registersize > 2**32 else False
+	dir_cygwin = p.join(p.abspath(ossep), 'cygwin' + ('64' if is_64bit else '32'))
+
+	try:
+		process_args(argslist)
+
+		check_prereqs()
+
+		cygwin_configure()
+
+	except KeyboardInterrupt:
+		eprint('\n'+"User interrupted configuration process.  Exiting...")
+		exit(1)
+
