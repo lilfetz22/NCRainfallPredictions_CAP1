@@ -20,7 +20,7 @@ from urllib.parse import urljoin
 import urllib.request
 import subprocess
 import base64
-import cygwin_configure
+import cygwin_configure as cc
 
 
 public_key_file = p.join(p.dirname(p.realpath(__file__)), 'cygwin_pubring.asc')
@@ -507,9 +507,10 @@ if __name__ == "__main__":
 		{ 'fn':install_cygwin, 'onerror':"FAILED: download & installation of cygwin." },
 		{ 'fn':verify_installation, 'onerror':"FAILED: verification of cygwin installation." },
 		{ 'fn':setup_user, 'onerror':"FAILED: cygwin user profile setup." },
-		{ 'fn':cygwin_configure.MAIN, 'onerror':"FAILED: ansible configuration of cygwin." }
+		{ 'fn':cc.cygwin_configure, 'onerror':"FAILED: ansible configuration of cygwin." }
 	]
-
+	cc.is_64bit = is_64bit
+	cc.dir_cygwin = dir_cygwin
 
 	try:
 		process_args(argslist)
