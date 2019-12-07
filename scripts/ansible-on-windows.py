@@ -1,14 +1,9 @@
 #!/usr/bin/env python3
+# codejedi365 | MIT License
 
-#
-#
-# make sure /etc/skel files are transferred over and setup
-# complete rest of ansible install
-
-# On failure, blow away directory
-# blow away file on invalid verification or user cancelation
-
-
+from copy import copy as clone
+from datetime import datetime as date
+from pytz import timezone
 from os import path as p
 from os import sep as ossep
 from os import chdir as cd
@@ -72,40 +67,64 @@ def _vprint(msglvl, *args, **kwargs):
 
 
 def usage(printTo=""):
+	'''
+	Prints script parameter & flag option examples
+	param: printTo, Change print function from stderr to stdout
+	'''
 	this_file = p.basename(p.abspath(__file__))
 	printFn = print if printTo == "stdout" else eprint
-	printFn("Usage: ./{0} [-h | --help]".format(this_file))
+	printFn("Usage: ./{0} [-v | -vv | -vvv] [-h | --help]".format(this_file))
 	exit(1)
 
 
 def help():
     print("")
-    # print(" Ansible on Cygwin64 Configuration Script ")
-    # print("------------------------------------------")
-    # print("This script simplifies the user burden of manually installing each "+
-	# 	  "package into cygwin.  This will execute the commands to set up the "+
-	# 	  "package alias and $PATH variable in ~/.bash_profile & ~/.bashrc.  Then "+
-	# 	  "it will execute a sequential install of ansible related dependent "+
-	# 	  "packages into the Cygwin environment.  Lastly, it will run a pip "+
-	# 	  "install of the ansible package."+'\n\n'+
-	# 	  "Requirements: \n"+
-	# 	  "   1. Run with Administrator privileges.\n"+
-	# 	  "   2. Run from Windows OS proper (PowerShell recommended)\n"+
-	# 	  "   3. Cygwin installed at C:\\cygwin64\\ "+
-	# 	  '\n')
+    print(" Ansible on Windows Configuration Script ")
+    print("-----------------------------------------")
+    print("This script automates the download, install, and configuration of "+
+		  "Ansible for Windows.  It depends upon cygwin (a linux emulator compiled "+
+		  "to run on Windows OS) which then can configure Ansible to work with the "+
+		  "Cygwin substructure.  This hooks into the cygwin_configure.py script to "+
+		  "make this script an enclusive one use step."+
+		  '\n\n'+
+		  "Requirements: \n"+
+		  "   1. Run with Administrator privileges."+'\n'+
+		  "   2. Run from Windows OS proper (PowerShell recommended)"+'\n')
     try: 
         usage(printTo="stdout")
     except SystemExit:
         print("")
     print("Available Options: ")
-    print("  -h | --help     Help")
+    print("  -h | --help       Help")
+    print("  -v | -vv | -vvv   Show in-depth log output (descriptive, detailed, verbose)")
     print("")
     exit(0)
 
+
+def print_banner():
+    print('\n'+ \
+			"======================================")
+    print(	"|   Ansible for Windows via Cygwin   |")
+    print(  "======================================")
+    print(  "START: {}".format(date.now(timezone('US/Eastern')).strftime("%a %b %d %H:%M:%S %Z %Y"))+'\n')
+    print(  "--------------------------------------")
+    print(  "$> download, install, configure ... ANSIBLE"+'\n')
+
+
 # Process line arguments
-def process_args( args ):
+def process_args( argslist ):
+	global VERBOSE
+	args = clone(argslist)
+	args.pop(0)  # skip index 0 since it is the filename not an parameter
 
 	# Argument Handlers
+	def add_verbosity(i):
+		global VERBOSE
+		if isinstance(VERBOSE, bool) and not VERBOSE:   # was False
+			VERBOSE = 1
+		elif isinstance(VERBOSE, int):
+			VERBOSE += len(regex(r'v').findall(args[i]))
+			
 	def request_help(i):
 		help()
 	def end_args(i):
@@ -114,22 +133,83 @@ def process_args( args ):
 		usage()
 
 	switcher = {
+		'-v' :		  add_verbosity,
+		'-vv' :		  add_verbosity,
+		'-vvv' :	  add_verbosity,
 		'-h' :        request_help,
 		'--help' :    request_help,
 		'/h' :		  request_help,
 		'--' : 		  end_args
 	}
 
-	for i in range(1,len(args)):
+	# TODO: Bug if you have -vvh, will not work as expected, -vv must be separate option
+
+	# Dynamically finds other alternatives from spec ^
+	compressedflags = list(filter(lambda opt: regex(r'^-[^-](?!=)$').search(opt), switcher.keys()))
+	compressedflags = [regex(r'^-(.*)$').sub('\\1', i) for i in compressedflags]		# removes the hyphen
+	if len(compressedflags) > 1:
+		compressedflagsregex = regex("^-["+''.join(compressedflags)+"]{2,"+str(len(compressedflags))+"}$")
+	else:
+		compressedflagsregex = regex(r'^$')		# almost impossible to match 
+
+	# PRE-PROCESS opts spec... handle 2-part parameters
+	opts_w_input = dict(filter(lambda item: regex(r'=$').search(item[0]), switcher.items()))
+	opts_w_input_keys = list(opts_w_input.keys())
+	for o in opts_w_input_keys:			# Fixes switcher so keys will be found
+		fn = opts_w_input[o]
+		if regex(r'^-[^-]').search(o):				# single dash option (remove =)
+			opts_w_input.pop(o)
+			switcher.pop(o)
+			switcher[regex(r'^(.*)=$').sub('\\1',o)] = fn
+		elif regex(r'^--[^-]').search(o):			# double dash option (change to space denoted)
+			switcher.pop(o)
+			switcher[regex(r'^(.*)=$').sub('\\1',o)] = fn
+	opts_w_input_regex = regex(r"^("+'|'.join(opts_w_input)+r")(\S+)$") if len(opts_w_input_keys) != 0 else regex(r'^$')
+
+	## Massage Args to a normalized state (expand compressedflags, expand = to another index)
+	i_args = 0
+	for l in range(1,len(argslist)):	# original list (skip index 0 since it is the caller filename)
+		param = argslist[l]
+		if param != "" and compressedflagsregex.search(param):
+			del args[i_args]		# remove current combined arg
+			num_flags = 0
+			# uncompress flags
+			for a in range(1,len(param)):	# skip hyphen by starting at 1
+				i_args += num_flags
+				args.insert(i_args, '-'+param[a])
+				num_flags += 1
+			
+		elif opts_w_input_regex.match(param):
+			# separate option from value
+			option = regex(r'(.*)=$').sub('\\1', opts_w_input_regex.sub('\\1',param))  # remove =
+			optarg = opts_w_input_regex.sub('\\2',param)
+			args[i_args] = option
+			i_args += 1
+			args.insert(i_args, optarg)
+
+		else:
+			pass
+
+		i_args += 1						# increment with l
+
+
+	# PROCESS ARGS as actual input, modifying global variables
+	i = -1
+	while i+1 < len(args):
+		i += 1
 		try:
 			func = switcher[args[i]]
 			retVal = func(i)
-			if retVal == "end_args":
-				break
 		except KeyError:
 			unknown(i)
 		except SystemExit as exitrequest:
 			raise(exitrequest)
+		else:
+			if isinstance(retVal, str) and retVal == "end_args":
+				break
+			elif isinstance(retVal, dict) and "increment" in retVal:
+				i += retVal['increment']
+
 		
 	## // If-statements to check if interdependent options are satisfied // ##
 	
@@ -137,6 +217,9 @@ def process_args( args ):
 
 
 def check_prereqs():
+	'''
+	Validate environment & dependencies exist for script
+	'''
 	error_count = 0	
 	print("Checking script environment...")
 	compatible_os = regex(r'Windows')
@@ -153,6 +236,8 @@ def check_prereqs():
 			eprint("PowerShell w/ Admin Privalages command: \n\t Start-Process powershell -Verb RunAs")
 			error_count -= 1
 
+	# TODO: check for required cygwin_pubring.asc public key file
+
 	# VALID Environment
 	if error_count != 0:
 		return(error_count)
@@ -162,6 +247,10 @@ def check_prereqs():
 
 
 def setup_user():
+	'''
+	Configure user profile inside cygwin
+	1. Copy files from /etc/skel to home dir for profile setup
+	'''
 	cygwin_bash = p.join(dir_cygwin,'bin',"bash.exe")
 	cmds = [
 		' '.join(['/bin/cp', '-r', '/etc/skel/*', '$HOME/'])
@@ -278,7 +367,7 @@ def install_cygwin():
 		write2file(download, spec)
 		f = open(spec['output'],'r').read()
 		if not verify_sign(public_key_file, vars['exe.sig'], f):
-			raise( Exception("") )
+			raise( Exception("INVALID SIGNATURE: downloaded {exe} failed verification".format(exe=spec['output'])) )
 
 	# Download the correct exe and signature file
 	base_url = 'https://www.cygwin.com'
@@ -348,12 +437,10 @@ def install_cygwin():
 			shutil_rmtree(dir_cygwin)
 			raise(usr_canx)
 		except Exception as err:
+			# Handles HTTP exceptions
+			# Handles invalid content-type
+			# Handles invalid signature
 			eprint(err)
-			### TODO
-			# Handle HTTP exceptions
-			# Handle invalid content-type
-			
-			# Handle invalid signature
 			if 'exefile' in vars or dwnloadspec['name'] == 'exefile':
 				# Delete downloaded file
 				rm(p.join(dir_installer, dwnloadspec['output']))
@@ -403,8 +490,6 @@ if __name__ == "__main__":
 	FORCE = False
 	is_64bit = True if registersize > 2**32 else False
 	dir_cygwin = p.join(p.abspath(ossep), 'cygwin' + ('64' if is_64bit else '32'))
-	vvvprint("{}-bit detected.".format('64' if is_64bit else '32'))
-	vvvprint("Target Cygwin installation directory: \n\t {}".format(dir_cygwin))
 
 	config_actions = [ 
 		{ 'fn':install_cygwin, 'onerror':"FAILED: download & installation of cygwin." },
@@ -421,13 +506,18 @@ if __name__ == "__main__":
 			exit(1)
 
 		if not MODE_QUIET:
-			pass	# print_banner()
+			print_banner()
+
+		vvvprint("{}-bit detected.".format('64' if is_64bit else '32'))
+		vvvprint("Target Cygwin installation directory: \n\t {}".format(dir_cygwin))
 
 		for action in config_actions:
 			try:
 				action['fn']()
 			except KeyboardInterrupt as usr_canx:
 				raise(usr_canx)
+			except SystemExit as e:
+				exit(e.code)
 			except:
 				eprint( action['onerror'] )
 				exit(1)
