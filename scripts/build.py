@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 #
 # FILE: build.py
 #=========================================
@@ -151,6 +151,7 @@ def __build():
 				'jupyter nbconvert {0} --to script "{1}"'.format(loglevel,notebook)
 			]
 			is_shellcmd = False
+			print('\n'+'PS C:\> '+ext_cmd[1])
 
 		elif os_version == 'Linux' or os_version == 'Darwin':
 			ext_cmd = [
@@ -163,6 +164,7 @@ def __build():
 			exit(3)
 
 		## RUN external subprocess
+		print('Converting {} notebook...'.format(notebook))
 		try:
 			p = subprocess.Popen(
 				ext_cmd,
